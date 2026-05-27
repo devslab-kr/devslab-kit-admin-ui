@@ -36,20 +36,17 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'groups',
         name: 'groups',
-        component: () => import('@/views/PlaceholderView.vue'),
-        meta: { title: 'Groups' },
+        component: () => import('@/views/GroupsView.vue'),
       },
       {
         path: 'menus',
         name: 'menus',
-        component: () => import('@/views/PlaceholderView.vue'),
-        meta: { title: 'Menus' },
+        component: () => import('@/views/MenusView.vue'),
       },
       {
         path: 'audit-logs',
         name: 'audit-logs',
-        component: () => import('@/views/PlaceholderView.vue'),
-        meta: { title: 'Audit Logs' },
+        component: () => import('@/views/AuditLogsView.vue'),
       },
       {
         path: 'tenants',
