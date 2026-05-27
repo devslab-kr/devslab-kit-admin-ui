@@ -9,20 +9,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Scaffold
 - Vue 3 + Vite + TypeScript scaffold via `npm create vite`.
 - PrimeVue 4 (Aura preset) + Tailwind CSS 4 + `tailwindcss-primeui` + PrimeIcons setup.
 - Pinia stores: `auth` (token + current user in `localStorage`) and `ui` (light/dark theme toggle).
 - Vue Router with route-level lazy loading and nav guards (redirect to `/login` when unauthenticated).
 - axios client with `VITE_ADMIN_API_BASE_URL` env, Bearer interceptor, and 401 redirect.
-- `authApi.login` wrapper targeting `POST /admin/api/v1/auth/login` (endpoint shipped in matching backend PR).
-- `LoginView`, `AppLayout` (sidebar + header + dark/light toggle + sign-out), `DashboardView` (placeholder KPI cards), per-resource placeholder views.
+- `authApi.login` wrapper targeting `POST /admin/api/v1/auth/login`.
+- `LoginView`, `AppLayout` (sidebar + header + dark/light toggle + sign-out).
 - Bilingual `README` / `README.ko.md`, Apache-2.0 `LICENSE`, this `CHANGELOG`.
 - Vite dev proxy `/admin/api → http://localhost:8080`.
 
-### Notes
+#### Bootstrap fix
+- Wire `main.ts` to install Pinia, Vue Router, PrimeVue (Aura, `.dark` selector, `cssLayer: false`),
+  ToastService and ConfirmationService — the initial scaffold left this as
+  the default `createApp(App).mount('#app')` stub so every store and view was orphaned.
+- Replace the Vite template `style.css` with `tailwindcss` + `tailwindcss-primeui` +
+  PrimeIcons + the `.dark` custom variant.
+- Add the `@/*` alias to both Vite (`resolve.alias`) and TypeScript
+  (`compilerOptions.paths`, without the now-deprecated `baseUrl`).
 
-- Real CRUD pages (Users / Roles / Permissions / Groups / Menus / Audit Logs / Tenants /
-  Policies / Settings / Diagnostics) land in subsequent PRs.
-- i18n (ko/en via `vue-i18n`), GitHub Actions CI, `Dockerfile` + `nginx.conf` land in Phase D.
-- Login flow currently expects `LoginResponse { token, user }` from the backend, which the
-  `devslab-kit-admin-api` is in the process of adding.
+#### CRUD pages
+- **Users** — list / create / lock-unlock toggle / password reset / status change / delete (per-tenant).
+- **Roles** — list / create / rename / delete (per-tenant).
+- **Permissions** — list / create / edit description / delete.
+- **Groups** — list / create / rename / delete (per-tenant); API wrapper also covers member and role grant/revoke endpoints for a follow-up detail drawer.
+- **Menus** — PrimeVue TreeTable on the per-tenant menu tree, with add-root / add-child / edit (label / path / icon / required permission / display order) / delete.
+- **Audit Logs** — lazy-paginated DataTable with filters (tenant, actor, action, target type, outcome, datetime range) and a detail dialog that pretty-prints the JSON payload.
+- **Tenants** — list / create (id + name) / rename / status change (`ACTIVE` / `SUSPENDED` / `ARCHIVED`) / delete.
+- **Policies (ABAC)** — list registered policies plus a Test dialog that dry-runs a `(subject, action, resource)` tuple through `PolicyEvaluator` with client-side JSON validation.
+- **Diagnostics** — three side-effect-free probes: `login-test`, `permission-check`, `menu-visibility`.
+- **Settings** — read-only view of the live `DevslabKitProperties` grouped by domain (JWT / tenant resolver / identity lockout / audit / menu), plus a paginated table of the raw `devslab.*` entries.
+
+#### Dashboard
+- Replace placeholder KPI cards with real data (current-tenant user count, tenant count, signed-in user) and a "Recent audit events" list with severity tags and timestamps. Per-widget failures degrade gracefully without breaking the rest of the dashboard.
+
+#### Packaging
+- Multi-stage `Dockerfile` (`node:24-alpine` build → `nginx:1.27-alpine` serve).
+- `nginx.conf` with SPA fallback, immutable cache headers on `/assets/`, gzip on text MIME types, and `/admin/api/*` reverse-proxy to an upstream `admin-api:8080`.
+- `docker-compose.yml` for local stack: postgres + redis + admin UI.
+- `.dockerignore`.
+
+#### CI
+- `.github/workflows/ci.yml` — `npm ci` → `npm run build` → upload `dist/` artifact → Docker image build (Buildx + GHA cache, no push).
+
+### Notes
+- Playwright E2E smoke + i18n (`vue-i18n`) land in subsequent PRs.
+- Login flow currently expects `LoginResponse { token, user }` from the backend; matching `devslab-kit-admin-api` endpoints are landing in parallel on the kit side.

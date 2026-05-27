@@ -1,0 +1,59 @@
+# Local dev stack for devslab-kit-admin-ui.
+#
+# Brings up the backing services the admin console needs to be useful:
+# postgres + redis (consumed by the devslab-kit sample-app), and the
+# admin UI itself served by nginx out of the built SPA.
+#
+# The admin-api itself is NOT defined here — start it separately with
+# `./gradlew :devslab-kit-sample-app:bootRun` from the devslab-kit repo,
+# pointing it at this compose stack's `postgres` + `redis` ports
+# (5432 / 6379 published below). The nginx vhost in this repo reverse-
+# proxies `/admin/api/*` to `http://admin-api:8080`, so for the
+# containerised path either run the sample-app inside its own
+# compose stack on the same docker network or override
+# `ADMIN_API_UPSTREAM` to point at your host.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: devslab
+      POSTGRES_PASSWORD: devslab
+      POSTGRES_DB: devslab_kit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devslab -d devslab_kit"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  admin-ui:
+    build:
+      context: .
+      args:
+        # When the UI is served behind this same nginx, /admin/api/* is reverse-
+        # proxied — so leave the base URL relative.
+        VITE_ADMIN_API_BASE_URL: /admin/api/v1
+    ports:
+      - "8081:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
