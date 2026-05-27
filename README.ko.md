@@ -6,19 +6,16 @@
 
 ## 상태
 
-> **Scaffold 단계.** Login / Layout / placeholders 까지만. CRUD 페이지, 실제 백엔드 연동
-> (login endpoint, tenant/policy/settings/diagnostics endpoints), i18n, 패키징은
-> 후속 PR 들로.
+> **Scaffold + infra 단계.** Login / Layout / placeholders + Postgres/Redis Docker Compose 까지. CRUD 페이지, 실제 백엔드 연동, Playwright E2E, i18n, 패키징은 후속 PR.
 
 ## 목표
 
 단순 CRUD UI 가 아니라 kit 가 노출하는 **모든 기능**을 다루는 **full admin console**.
 
-- Identity / Access — Users · Roles · Permissions · Groups (계층 포함) · ABAC Policies
-- Platform — Tenants · Menus · 런타임 Settings (`devslab.kit.*` properties)
-- Observability — Dashboard (KPI + custom metrics) · Audit Logs · Diagnostics
-  (로그인 tester, 권한 tester, 메뉴 가시성 tester) · 마이그레이션 상태
-- Docs — OpenAPI / Swagger UI 임베드
+- Identity / Access — Users · Roles · Permissions · Groups (계층) · ABAC Policies
+- Platform — Tenants · Menus · 런타임 Settings (`devslab.kit.*`)
+- Observability — Dashboard (KPI + custom metrics) · Audit Logs · Diagnostics (login/permission/menu tester) · Migration 상태
+- Docs — OpenAPI / Swagger UI 임베드 (백엔드가 SB4 호환 springdoc 도입 시)
 
 ## 기술 스택
 
@@ -34,17 +31,46 @@
 | Composables | `@vueuse/core` |
 | 인증 | JWT (HS256) — `devslab-kit-admin-api` 발급, `localStorage` 저장 |
 
-## 실행
+## 로컬 개발 (터미널 3 개)
+
+### Terminal 1 — Postgres + Redis (이 repo)
 
 ```bash
-npm install
+npm run compose:up    # docker compose up -d (postgres + redis)
+```
+
+healthcheck 가 ready 될 때까지 기다린 다음 backend 실행.
+
+### Terminal 2 — devslab-kit 샘플 백엔드 (sibling repo)
+
+```bash
+# devslab-kit checkout 안에서
+./gradlew :devslab-kit-sample-app:bootRun
+```
+
+backend 는 `http://localhost:8080` 에서 떠서 위 Postgres / Redis 에 붙는다. Flyway 가 V1..V7 첫 부팅 시 적용.
+
+### Terminal 3 — Vite dev (이 repo)
+
+```bash
+npm install           # 첫 회만
 npm run dev
 ```
 
-dev 서버는 `http://localhost:5173` 에서 뜨고, `/admin/api/**` 는 `http://localhost:8080`
-로 proxy 한다 (`devslab-kit-sample-app` 같은 consumer 가 로컬에서 떠 있어야 함, CORS 불필요).
+dev 서버: `http://localhost:5173`. Vite 가 `/admin/api/**` → `http://localhost:8080` proxy 하므로 UI 는 CORS 없이 backend 호출.
 
-빌드 시 API base URL 오버라이드:
+## 유용한 npm 스크립트
+
+```bash
+npm run dev           # vite dev 서버
+npm run build         # 타입 체크 + 프로덕션 번들
+npm run preview       # 프로덕션 번들 로컬 미리보기
+npm run compose:up    # docker compose up -d
+npm run compose:down  # docker compose down (postgres volume 유지)
+npm run compose:logs  # postgres/redis 로그 팔로우
+```
+
+빌드 시 `VITE_ADMIN_API_BASE_URL` 로 API base URL 오버라이드:
 
 ```bash
 VITE_ADMIN_API_BASE_URL=https://your.api.example.com/admin/api/v1 npm run build
@@ -62,6 +88,7 @@ src/
 ├─ App.vue
 ├─ main.ts
 └─ style.css      ← Tailwind + PrimeVue + PrimeIcons
+docker-compose.yml ← 로컬 개발 / E2E 용 postgres + redis
 ```
 
 ## 배포
