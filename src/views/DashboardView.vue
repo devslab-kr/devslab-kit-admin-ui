@@ -61,58 +61,66 @@ onMounted(refresh)
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card>
+      <Card data-testid="kpi-users">
         <template #content>
           <div class="flex items-center gap-3">
             <i class="pi pi-user text-2xl text-primary"></i>
             <div class="flex-1">
               <div class="text-sm text-surface-500 dark:text-surface-400">Users (current tenant)</div>
               <Skeleton v-if="loading && userCount === null" height="2rem" />
-              <div v-else class="text-2xl font-semibold">{{ userCount ?? '—' }}</div>
+              <div v-else class="text-2xl font-semibold" data-testid="kpi-users-value">
+                {{ userCount ?? '—' }}
+              </div>
             </div>
           </div>
         </template>
       </Card>
 
-      <Card>
+      <Card data-testid="kpi-tenants">
         <template #content>
           <div class="flex items-center gap-3">
             <i class="pi pi-building text-2xl text-primary"></i>
             <div class="flex-1">
               <div class="text-sm text-surface-500 dark:text-surface-400">Tenants</div>
               <Skeleton v-if="loading && tenantCount === null" height="2rem" />
-              <div v-else class="text-2xl font-semibold">{{ tenantCount ?? '—' }}</div>
+              <div v-else class="text-2xl font-semibold" data-testid="kpi-tenants-value">
+                {{ tenantCount ?? '—' }}
+              </div>
             </div>
           </div>
         </template>
       </Card>
 
-      <Card>
+      <Card data-testid="kpi-current-tenant">
         <template #content>
           <div class="flex items-center gap-3">
             <i class="pi pi-id-card text-2xl text-primary"></i>
             <div class="flex-1">
               <div class="text-sm text-surface-500 dark:text-surface-400">Current tenant</div>
-              <div class="text-2xl font-semibold">{{ auth.user?.tenantId ?? '—' }}</div>
+              <div class="text-2xl font-semibold" data-testid="kpi-current-tenant-value">
+                {{ auth.user?.tenantId ?? '—' }}
+              </div>
             </div>
           </div>
         </template>
       </Card>
 
-      <Card>
+      <Card data-testid="kpi-signed-in">
         <template #content>
           <div class="flex items-center gap-3">
             <i class="pi pi-user-edit text-2xl text-primary"></i>
             <div class="flex-1">
               <div class="text-sm text-surface-500 dark:text-surface-400">Signed in as</div>
-              <div class="text-2xl font-semibold">{{ auth.user?.loginId ?? '—' }}</div>
+              <div class="text-2xl font-semibold" data-testid="kpi-signed-in-value">
+                {{ auth.user?.loginId ?? '—' }}
+              </div>
             </div>
           </div>
         </template>
       </Card>
     </div>
 
-    <Card>
+    <Card data-testid="recent-events">
       <template #title>Recent audit events</template>
       <template #content>
         <div v-if="loading && recentEvents === null" class="flex flex-col gap-2">

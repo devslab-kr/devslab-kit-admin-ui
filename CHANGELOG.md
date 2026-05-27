@@ -51,8 +51,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.dockerignore`.
 
 #### CI
-- `.github/workflows/ci.yml` — `npm ci` → `npm run build` → upload `dist/` artifact → Docker image build (Buildx + GHA cache, no push).
+- `.github/workflows/ci.yml` — `npm ci` → `npm run build` → upload `dist/` artifact → Playwright smoke (Chromium, browsers cached via Playwright's installer) → Docker image build (Buildx + GHA cache, no push). Playwright HTML report uploaded as an artifact on failure.
+
+#### E2E
+- `@playwright/test` + `playwright.config.ts` (single Chromium project, `vite preview` as the webServer on `127.0.0.1:4173`, retries + traces / videos on failure in CI).
+- Shared fixture in `e2e/fixtures.ts` that mocks every `/admin/api/**` call the smoke tests need (auth login, users list, tenants list, audit-logs search). The contract lives in exactly one place — if the SPA starts calling an unmocked endpoint, the test fails loudly.
+- `e2e/login.spec.ts` — unauthenticated `/` redirects to `/login`, valid credentials land on `/dashboard`, `?redirect=` query is honoured after sign-in.
+- `e2e/dashboard.spec.ts` — KPI widgets show the mocked counts (3 users, 2 tenants, current tenant + signed-in user from the seeded session) and the Recent audit events list shows both SUCCESS and FAILURE rows.
+- Stable `data-testid`s on the dashboard widgets so assertions don't collide with sidebar nav labels (which use the same words).
 
 ### Notes
-- Playwright E2E smoke + i18n (`vue-i18n`) land in subsequent PRs.
+- i18n (`vue-i18n`) lands in a subsequent PR.
 - Login flow currently expects `LoginResponse { token, user }` from the backend; matching `devslab-kit-admin-api` endpoints are landing in parallel on the kit side.
