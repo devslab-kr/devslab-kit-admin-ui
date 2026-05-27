@@ -70,6 +70,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### E2E
 - `e2e/i18n.spec.ts` — toggling the locale swaps `Identity & Access` ↔ `아이덴티티 / 접근` and `Users` ↔ `사용자`, and the choice survives a reload.
 
+#### i18n — full CRUD migration
+- All 10 CRUD / observability pages migrated from hardcoded English to `t('...')` keys:
+  Users, Roles, Permissions, Groups, Menus, Audit Logs, Tenants, Policies,
+  Diagnostics, Settings.
+- New per-page namespaces in `en.ts` + `ko.ts` (title, column headers, dialog
+  titles / placeholders / prompts, delete-confirm messages with `{interpolated}`
+  identifiers, page-specific toasts).
+- New shared `common` + `toasts` namespaces (refresh, create, cancel, save,
+  reset, edit, rename, delete, close, search, tenantId, code, name, description,
+  actions; load/create/update/delete/rename failure summaries) so the per-page
+  bundles don't repeat common labels.
+- `LoginView` already used i18n; only the placeholders needed no change.
+- Playwright smoke suite (5 specs) still passes — the existing tests scope
+  selectors via `data-testid` and `getByRole`, so EN/KO label swaps don't break
+  them.
+
 ### Notes
-- The 9 CRUD pages still ship with hardcoded English labels; they migrate to `t('...')` keys in subsequent small PRs.
 - Login flow currently expects `LoginResponse { token, user }` from the backend; matching `devslab-kit-admin-api` endpoints are landing in parallel on the kit side.

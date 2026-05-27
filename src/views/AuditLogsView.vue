@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import DataTable, { type DataTablePageEvent } from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -14,6 +15,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const filter = ref<{
   tenantId: string
@@ -31,11 +33,11 @@ const filter = ref<{
   range: null,
 })
 
-const outcomeOptions = [
-  { label: 'Any', value: '' },
-  { label: 'Success', value: 'SUCCESS' },
-  { label: 'Failure', value: 'FAILURE' },
-]
+const outcomeOptions = computed(() => [
+  { label: t('auditLogs.outcome.any'), value: '' },
+  { label: t('auditLogs.outcome.success'), value: 'SUCCESS' },
+  { label: t('auditLogs.outcome.failure'), value: 'FAILURE' },
+])
 
 const rows = ref<AuditLog[]>([])
 const totalRecords = ref(0)
@@ -65,7 +67,7 @@ async function reload() {
     rows.value = result.content
     totalRecords.value = result.totalElements
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Failed to load audit logs', detail: msg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('auditLogs.toasts.loadFailed'), detail: msg(e), life: 4000 })
   } finally {
     loading.value = false
   }
@@ -96,31 +98,31 @@ onMounted(reload)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">Audit logs</h1>
-      <Button icon="pi pi-refresh" severity="secondary" outlined @click="reload" />
+      <h1 class="text-xl font-semibold">{{ t('auditLogs.title') }}</h1>
+      <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-6 gap-3 p-3 rounded-md border border-surface-200 dark:border-surface-700">
-      <InputText v-model="filter.tenantId" placeholder="tenantId" />
-      <InputText v-model="filter.actorLogin" placeholder="Actor login" />
-      <InputText v-model="filter.action" placeholder="Action (e.g. user.login)" />
-      <InputText v-model="filter.targetType" placeholder="Target type" />
+      <InputText v-model="filter.tenantId" :placeholder="t('common.tenantId')" />
+      <InputText v-model="filter.actorLogin" :placeholder="t('auditLogs.filters.actorLogin')" />
+      <InputText v-model="filter.action" :placeholder="t('auditLogs.filters.action')" />
+      <InputText v-model="filter.targetType" :placeholder="t('auditLogs.filters.targetType')" />
       <Select
         v-model="filter.outcome"
         :options="outcomeOptions"
         option-label="label"
         option-value="value"
-        placeholder="Outcome"
+        :placeholder="t('auditLogs.filters.outcomeAny')"
       />
       <DatePicker
         v-model="filter.range"
         selection-mode="range"
         :show-time="true"
         hour-format="24"
-        placeholder="From — To"
+        :placeholder="t('auditLogs.filters.from')"
       />
       <div class="md:col-span-6 flex justify-end">
-        <Button icon="pi pi-search" label="Search" @click="page = 0; reload()" />
+        <Button icon="pi pi-search" :label="t('auditLogs.search')" @click="page = 0; reload()" />
       </div>
     </div>
 
@@ -136,47 +138,47 @@ onMounted(reload)
       data-key="id"
       @page="onPage"
     >
-      <Column field="occurredAt" header="When" style="width: 14rem">
+      <Column field="occurredAt" :header="t('auditLogs.columns.when')" style="width: 14rem">
         <template #body="{ data }">
           {{ new Date(data.occurredAt).toLocaleString() }}
         </template>
       </Column>
-      <Column field="action" header="Action" sortable />
-      <Column field="actorLogin" header="Actor" />
-      <Column field="targetType" header="Target type" />
-      <Column field="targetId" header="Target id" />
-      <Column header="Outcome" style="width: 7rem">
+      <Column field="action" :header="t('auditLogs.columns.action')" sortable />
+      <Column field="actorLogin" :header="t('auditLogs.columns.actor')" />
+      <Column field="targetType" :header="t('auditLogs.columns.targetType')" />
+      <Column field="targetId" :header="t('auditLogs.columns.targetId')" />
+      <Column :header="t('auditLogs.columns.outcome')" style="width: 7rem">
         <template #body="{ data }">
           <Tag :value="data.outcome" :severity="data.outcome === 'SUCCESS' ? 'success' : 'danger'" />
         </template>
       </Column>
-      <Column field="ip" header="IP" />
+      <Column field="ip" :header="t('auditLogs.columns.ip')" />
       <Column header="" style="width: 5rem">
         <template #body="{ data }">
-          <Button icon="pi pi-eye" text rounded aria-label="Inspect" @click="openDetail(data)" />
+          <Button icon="pi pi-eye" text rounded :aria-label="t('auditLogs.ariaInspect')" @click="openDetail(data)" />
         </template>
       </Column>
     </DataTable>
 
-    <Dialog v-model:visible="detailOpen" header="Audit log detail" modal :style="{ width: '36rem' }">
+    <Dialog v-model:visible="detailOpen" :header="t('auditLogs.detail.title')" modal :style="{ width: '36rem' }">
       <div v-if="detail" class="flex flex-col gap-2 text-sm">
-        <div><strong>When:</strong> {{ new Date(detail.occurredAt).toLocaleString() }}</div>
-        <div><strong>Action:</strong> {{ detail.action }}</div>
-        <div><strong>Outcome:</strong> {{ detail.outcome }}</div>
-        <div><strong>Tenant:</strong> {{ detail.tenantId || '—' }}</div>
-        <div><strong>Actor:</strong> {{ detail.actorLogin || '—' }} ({{ detail.actorId || '—' }})</div>
-        <div><strong>Target:</strong> {{ detail.targetType || '—' }} / {{ detail.targetId || '—' }}</div>
-        <div><strong>IP:</strong> {{ detail.ip || '—' }}</div>
-        <div><strong>User-Agent:</strong> {{ detail.userAgent || '—' }}</div>
+        <div><strong>{{ t('auditLogs.detail.when') }}:</strong> {{ new Date(detail.occurredAt).toLocaleString() }}</div>
+        <div><strong>{{ t('auditLogs.detail.action') }}:</strong> {{ detail.action }}</div>
+        <div><strong>{{ t('auditLogs.detail.outcome') }}:</strong> {{ detail.outcome }}</div>
+        <div><strong>{{ t('auditLogs.detail.tenant') }}:</strong> {{ detail.tenantId || '—' }}</div>
+        <div><strong>{{ t('auditLogs.detail.actor') }}:</strong> {{ detail.actorLogin || '—' }} ({{ detail.actorId || '—' }})</div>
+        <div><strong>{{ t('auditLogs.detail.target') }}:</strong> {{ detail.targetType || '—' }} / {{ detail.targetId || '—' }}</div>
+        <div><strong>{{ t('auditLogs.detail.ip') }}:</strong> {{ detail.ip || '—' }}</div>
+        <div><strong>{{ t('auditLogs.detail.userAgent') }}:</strong> {{ detail.userAgent || '—' }}</div>
         <div class="mt-2">
-          <strong>Payload:</strong>
+          <strong>{{ t('auditLogs.detail.payload') }}:</strong>
           <pre class="mt-1 p-2 rounded bg-surface-100 dark:bg-surface-800 overflow-auto text-xs">{{
-            detail.payload ? JSON.stringify(detail.payload, null, 2) : '(empty)'
+            detail.payload ? JSON.stringify(detail.payload, null, 2) : t('auditLogs.detail.empty')
           }}</pre>
         </div>
       </div>
       <template #footer>
-        <Button label="Close" text @click="detailOpen = false" />
+        <Button :label="t('common.close')" text @click="detailOpen = false" />
       </template>
     </Dialog>
   </div>
