@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Card from 'primevue/card'
 import Skeleton from 'primevue/skeleton'
 import Tag from 'primevue/tag'
@@ -12,6 +13,7 @@ import { auditLogsApi, type AuditLog } from '@/api/auditLogs'
 
 const auth = useAuthStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const userCount = ref<number | null>(null)
 const tenantCount = ref<number | null>(null)
@@ -43,8 +45,8 @@ async function refresh() {
   if (errors.length > 0) {
     toast.add({
       severity: 'warn',
-      summary: 'Some widgets failed to load',
-      detail: `Affected: ${errors.join(', ')}`,
+      summary: t('dashboard.widgetsFailed'),
+      detail: t('dashboard.widgetsFailedDetail', { names: errors.join(', ') }),
       life: 4000,
     })
   }
@@ -56,8 +58,15 @@ onMounted(refresh)
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">Dashboard</h1>
-      <Button icon="pi pi-refresh" severity="secondary" outlined :loading="loading" @click="refresh" />
+      <h1 class="text-xl font-semibold">{{ t('dashboard.title') }}</h1>
+      <Button
+        icon="pi pi-refresh"
+        severity="secondary"
+        outlined
+        :loading="loading"
+        :aria-label="t('dashboard.refresh')"
+        @click="refresh"
+      />
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -66,7 +75,7 @@ onMounted(refresh)
           <div class="flex items-center gap-3">
             <i class="pi pi-user text-2xl text-primary"></i>
             <div class="flex-1">
-              <div class="text-sm text-surface-500 dark:text-surface-400">Users (current tenant)</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiUsers') }}</div>
               <Skeleton v-if="loading && userCount === null" height="2rem" />
               <div v-else class="text-2xl font-semibold" data-testid="kpi-users-value">
                 {{ userCount ?? '—' }}
@@ -81,7 +90,7 @@ onMounted(refresh)
           <div class="flex items-center gap-3">
             <i class="pi pi-building text-2xl text-primary"></i>
             <div class="flex-1">
-              <div class="text-sm text-surface-500 dark:text-surface-400">Tenants</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiTenants') }}</div>
               <Skeleton v-if="loading && tenantCount === null" height="2rem" />
               <div v-else class="text-2xl font-semibold" data-testid="kpi-tenants-value">
                 {{ tenantCount ?? '—' }}
@@ -96,7 +105,7 @@ onMounted(refresh)
           <div class="flex items-center gap-3">
             <i class="pi pi-id-card text-2xl text-primary"></i>
             <div class="flex-1">
-              <div class="text-sm text-surface-500 dark:text-surface-400">Current tenant</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiCurrentTenant') }}</div>
               <div class="text-2xl font-semibold" data-testid="kpi-current-tenant-value">
                 {{ auth.user?.tenantId ?? '—' }}
               </div>
@@ -110,7 +119,7 @@ onMounted(refresh)
           <div class="flex items-center gap-3">
             <i class="pi pi-user-edit text-2xl text-primary"></i>
             <div class="flex-1">
-              <div class="text-sm text-surface-500 dark:text-surface-400">Signed in as</div>
+              <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiSignedIn') }}</div>
               <div class="text-2xl font-semibold" data-testid="kpi-signed-in-value">
                 {{ auth.user?.loginId ?? '—' }}
               </div>
@@ -121,13 +130,13 @@ onMounted(refresh)
     </div>
 
     <Card data-testid="recent-events">
-      <template #title>Recent audit events</template>
+      <template #title>{{ t('dashboard.recentEvents') }}</template>
       <template #content>
         <div v-if="loading && recentEvents === null" class="flex flex-col gap-2">
           <Skeleton v-for="i in 5" :key="i" height="2rem" />
         </div>
         <div v-else-if="!recentEvents || recentEvents.length === 0" class="text-sm text-surface-500">
-          No recent audit events.
+          {{ t('dashboard.noEvents') }}
         </div>
         <ul v-else class="divide-y divide-surface-200 dark:divide-surface-700">
           <li v-for="evt in recentEvents" :key="evt.id" class="py-2 flex items-center gap-3 text-sm">

@@ -60,6 +60,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `e2e/dashboard.spec.ts` — KPI widgets show the mocked counts (3 users, 2 tenants, current tenant + signed-in user from the seeded session) and the Recent audit events list shows both SUCCESS and FAILURE rows.
 - Stable `data-testid`s on the dashboard widgets so assertions don't collide with sidebar nav labels (which use the same words).
 
+#### i18n
+- `vue-i18n` 11 set up under `src/i18n/`. Composition-mode (`legacy: false`), `globalInjection: true`, English / Korean message bundles in `src/i18n/locales/{en,ko}.ts` with a typed nested key tree.
+- Initial locale detection: persisted choice in `localStorage` (`devslab-kit-admin-locale`) wins; otherwise infer from `navigator.language` (Korean for `ko-*`, English otherwise).
+- `setLocale()` writes the choice back to `localStorage` and updates `<html lang>`.
+- Locale toggle button in the `AppLayout` header (next to the theme toggle); shows the active code in caps (`EN` / `KO`) so users see which one they're in.
+- Migrated shell strings to keys: `AppLayout` (sidebar group + item labels, header aria-labels), `LoginView` (form labels, submit, failure toast), `DashboardView` (page title, KPI labels, recent-events card, partial-failure toast). The 9 CRUD pages still use English labels and will migrate page-by-page in follow-up PRs — none of their backing API shapes change.
+
+#### E2E
+- `e2e/i18n.spec.ts` — toggling the locale swaps `Identity & Access` ↔ `아이덴티티 / 접근` and `Users` ↔ `사용자`, and the choice survives a reload.
+
 ### Notes
-- i18n (`vue-i18n`) lands in a subsequent PR.
+- The 9 CRUD pages still ship with hardcoded English labels; they migrate to `t('...')` keys in subsequent small PRs.
 - Login flow currently expects `LoginResponse { token, user }` from the backend; matching `devslab-kit-admin-api` endpoints are landing in parallel on the kit side.
