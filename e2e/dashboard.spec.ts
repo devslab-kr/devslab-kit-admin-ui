@@ -1,6 +1,8 @@
-import { test, expect, FAKE_TOKEN, FAKE_USER } from './fixtures'
+import { test, expect, FAKE_TOKEN, FAKE_USER, REAL_BACKEND } from './fixtures'
 
 test.describe('Dashboard', () => {
+  test.skip(REAL_BACKEND, 'mock-only: asserts against mocked KPI counts')
+
   test.beforeEach(async ({ page }) => {
     // Seed an authenticated session directly so the test focuses on the
     // dashboard widgets, not the login form (covered by login.spec.ts).

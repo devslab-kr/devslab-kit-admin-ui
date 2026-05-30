@@ -1,26 +1,36 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Playwright config for devslab-kit-admin-ui smoke tests.
+ * Playwright config for devslab-kit-admin-ui.
  *
- * The tests intercept every `/admin/api/**` call with `page.route()`,
- * so no real `devslab-kit-admin-api` instance is needed — we only need
- * the SPA to be served somewhere Playwright can navigate to.
+ * Two modes, selected by the E2E_BACKEND env var:
  *
- * `webServer` boots `vite preview` against the production build, which
- * exercises the same bundle CI ships (rather than the dev server with
- * HMR / source maps). Trade-off: the test job has to `npm run build`
- * first.
+ *  - default (mock): tests intercept every `/admin/api/**` call with
+ *    `page.route()`, so no backend is needed. `webServer` boots
+ *    `vite preview` against the production build — exercising the same
+ *    bundle CI ships.
+ *
+ *  - real (E2E_BACKEND=real): tests talk to a live `devslab-kit`
+ *    sample-app. `webServer` runs `vite dev`, whose proxy forwards
+ *    `/admin/api` → :8080. `globalSetup` health-checks the backend
+ *    first. The mock-only specs skip themselves; `real-backend.spec.ts`
+ *    runs only here.
  */
+const REAL = process.env.E2E_BACKEND === 'real'
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Real-backend mode runs serially: all tests log in as the same seeded
+  // admin, and N browsers racing the same login transaction is flaky. The
+  // mock suite has no shared state, so it keeps full parallelism.
+  workers: process.env.CI ? 1 : REAL ? 1 : undefined,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['github']] : 'list',
+  globalSetup: './e2e/global-setup.ts',
   use: {
-    baseURL: 'http://127.0.0.1:4173',
+    baseURL: REAL ? 'http://127.0.0.1:5173' : 'http://127.0.0.1:4173',
     trace: 'on-first-retry',
     video: 'retain-on-failure',
   },
@@ -30,10 +40,17 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: REAL
+    ? {
+        command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort',
+        url: 'http://127.0.0.1:5173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      }
+    : {
+        command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
+        url: 'http://127.0.0.1:4173',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
 })
