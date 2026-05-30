@@ -49,7 +49,7 @@ const editForm = ref({
 
 function toTree(items: MenuItem[]): TreeNode[] {
   return items.map((item) => ({
-    key: item.id.value,
+    key: item.id,
     data: item,
     children: item.children ? toTree(item.children) : [],
   }))
@@ -108,7 +108,7 @@ function openEdit(item: MenuItem) {
 async function submitEdit() {
   if (!editTarget.value) return
   try {
-    await menusApi.update(editTarget.value.id.value, {
+    await menusApi.update(editTarget.value.id, {
       label: editForm.value.label,
       path: editForm.value.path || null,
       icon: editForm.value.icon || null,
@@ -131,7 +131,7 @@ function confirmDelete(item: MenuItem) {
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
-        await menusApi.remove(item.id.value)
+        await menusApi.remove(item.id)
         toast.add({ severity: 'success', summary: t('menus.toasts.deleted'), life: 2500 })
         await reload()
       } catch (e) {
@@ -186,7 +186,7 @@ onMounted(reload)
       <Column field="displayOrder" :header="t('menus.columns.order')" style="width: 6rem" />
       <Column header="" style="width: 12rem; text-align: right">
         <template #body="{ node }">
-          <Button icon="pi pi-plus" text rounded :aria-label="t('menus.ariaAddChild')" @click="openCreate(node.data.id.value)" />
+          <Button icon="pi pi-plus" text rounded :aria-label="t('menus.ariaAddChild')" @click="openCreate(node.data.id)" />
           <Button icon="pi pi-pencil" text rounded :aria-label="t('common.ariaEdit')" @click="openEdit(node.data)" />
           <Button
             icon="pi pi-trash"

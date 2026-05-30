@@ -1,9 +1,9 @@
 import { client } from './client'
 
 export interface MenuItem {
-  id: { value: string }
-  tenantId: { value: string }
-  parentId: { value: string } | null
+  id: string
+  tenantId: string
+  parentId: string | null
   code: string
   label: string
   path: string | null
