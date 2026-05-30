@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -16,6 +17,7 @@ import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 const toast = useToast()
 const confirm = useConfirm()
+const { t } = useI18n()
 
 const tenantId = ref(auth.user?.tenantId ?? 'default')
 const rows = ref<UserAccount[]>([])
@@ -41,7 +43,7 @@ async function reload() {
   try {
     rows.value = await usersApi.list(tenantId.value)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Failed to load users', detail: extractMsg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('users.toasts.loadFailed'), detail: extractMsg(e), life: 4000 })
   } finally {
     loading.value = false
   }
@@ -61,11 +63,11 @@ async function submitCreate() {
       rawPassword: newUser.value.rawPassword,
       providerType: newUser.value.providerType || undefined,
     })
-    toast.add({ severity: 'success', summary: 'User created', life: 2500 })
+    toast.add({ severity: 'success', summary: t('users.toasts.created'), life: 2500 })
     createOpen.value = false
     await reload()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Create failed', detail: extractMsg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('toasts.createFailed'), detail: extractMsg(e), life: 4000 })
   }
 }
 
@@ -75,7 +77,7 @@ async function toggleLock(row: UserAccount) {
     else await usersApi.lock(row.id.value)
     await reload()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Lock/unlock failed', detail: extractMsg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('users.toasts.lockFailed'), detail: extractMsg(e), life: 4000 })
   }
 }
 
@@ -89,10 +91,10 @@ async function submitPassword() {
   if (!passwordTarget.value) return
   try {
     await usersApi.resetPassword(passwordTarget.value.id.value, { newRawPassword: newPassword.value })
-    toast.add({ severity: 'success', summary: 'Password reset', life: 2500 })
+    toast.add({ severity: 'success', summary: t('users.toasts.passwordReset'), life: 2500 })
     passwordDialogOpen.value = false
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Password reset failed', detail: extractMsg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('users.toasts.passwordFailed'), detail: extractMsg(e), life: 4000 })
   }
 }
 
@@ -106,27 +108,27 @@ async function submitStatus() {
   if (!statusTarget.value) return
   try {
     await usersApi.updateStatus(statusTarget.value.id.value, { status: newStatus.value })
-    toast.add({ severity: 'success', summary: 'Status updated', life: 2500 })
+    toast.add({ severity: 'success', summary: t('users.toasts.statusUpdated'), life: 2500 })
     statusDialogOpen.value = false
     await reload()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Status update failed', detail: extractMsg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('users.toasts.statusFailed'), detail: extractMsg(e), life: 4000 })
   }
 }
 
 function confirmDelete(row: UserAccount) {
   confirm.require({
-    message: `Delete user "${row.loginId}"? This cannot be undone.`,
-    header: 'Delete user',
+    message: t('users.deleteConfirm.message', { loginId: row.loginId }),
+    header: t('users.deleteConfirm.header'),
     icon: 'pi pi-exclamation-triangle',
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
         await usersApi.remove(row.id.value)
-        toast.add({ severity: 'success', summary: 'User deleted', life: 2500 })
+        toast.add({ severity: 'success', summary: t('users.toasts.deleted'), life: 2500 })
         await reload()
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Delete failed', detail: extractMsg(e), life: 4000 })
+        toast.add({ severity: 'error', summary: t('toasts.deleteFailed'), detail: extractMsg(e), life: 4000 })
       }
     },
   })
@@ -146,11 +148,11 @@ onMounted(reload)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">Users</h1>
+      <h1 class="text-xl font-semibold">{{ t('users.title') }}</h1>
       <div class="flex items-center gap-2">
-        <InputText v-model="tenantId" placeholder="tenantId" class="w-48" />
-        <Button icon="pi pi-refresh" severity="secondary" outlined @click="reload" />
-        <Button icon="pi pi-plus" label="Create" @click="openCreate" />
+        <InputText v-model="tenantId" :placeholder="t('common.tenantId')" class="w-48" />
+        <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
+        <Button icon="pi pi-plus" :label="t('common.create')" @click="openCreate" />
       </div>
     </div>
 
@@ -163,19 +165,19 @@ onMounted(reload)
       :rows-per-page-options="[10, 25, 50]"
       data-key="id.value"
     >
-      <Column field="loginId" header="Login ID" sortable />
-      <Column field="email" header="Email" />
-      <Column header="Status" sortable>
+      <Column field="loginId" :header="t('users.columns.loginId')" sortable />
+      <Column field="email" :header="t('users.columns.email')" />
+      <Column :header="t('users.columns.status')" sortable>
         <template #body="{ data }">
           <Tag :value="data.status" :severity="statusSeverity(data.status)" />
         </template>
       </Column>
-      <Column header="Locked">
+      <Column :header="t('users.columns.locked')">
         <template #body="{ data }">
           <i :class="['pi', data.locked ? 'pi-lock text-orange-500' : 'pi-lock-open text-green-500']"></i>
         </template>
       </Column>
-      <Column field="providerType" header="Provider" />
+      <Column field="providerType" :header="t('users.columns.provider')" />
       <Column header="" style="width: 14rem; text-align: right">
         <template #body="{ data }">
           <div class="flex items-center justify-end gap-1">
@@ -184,17 +186,17 @@ onMounted(reload)
               :severity="data.locked ? 'success' : 'warn'"
               text
               rounded
-              :aria-label="data.locked ? 'Unlock' : 'Lock'"
+              :aria-label="data.locked ? t('users.ariaLockToggle.unlock') : t('users.ariaLockToggle.lock')"
               @click="toggleLock(data)"
             />
-            <Button icon="pi pi-key" text rounded aria-label="Reset password" @click="openPassword(data)" />
-            <Button icon="pi pi-pencil" text rounded aria-label="Change status" @click="openStatus(data)" />
+            <Button icon="pi pi-key" text rounded :aria-label="t('users.ariaResetPassword')" @click="openPassword(data)" />
+            <Button icon="pi pi-pencil" text rounded :aria-label="t('users.ariaChangeStatus')" @click="openStatus(data)" />
             <Button
               icon="pi pi-trash"
               text
               rounded
               severity="danger"
-              aria-label="Delete"
+              :aria-label="t('common.ariaDelete')"
               @click="confirmDelete(data)"
             />
           </div>
@@ -202,44 +204,44 @@ onMounted(reload)
       </Column>
     </DataTable>
 
-    <Dialog v-model:visible="createOpen" header="Create user" modal :style="{ width: '28rem' }">
+    <Dialog v-model:visible="createOpen" :header="t('users.createDialog.title')" modal :style="{ width: '28rem' }">
       <div class="flex flex-col gap-3 pt-2">
-        <InputText v-model="newUser.loginId" placeholder="Login ID" />
-        <InputText v-model="newUser.email" placeholder="Email (optional)" />
+        <InputText v-model="newUser.loginId" :placeholder="t('users.createDialog.loginIdPlaceholder')" />
+        <InputText v-model="newUser.email" :placeholder="t('users.createDialog.emailPlaceholder')" />
         <Password
           v-model="newUser.rawPassword"
-          placeholder="Password (min 8)"
+          :placeholder="t('users.createDialog.passwordPlaceholder')"
           :feedback="false"
           toggle-mask
           fluid
         />
-        <InputText v-model="newUser.providerType" placeholder="Provider (default LOCAL)" />
+        <InputText v-model="newUser.providerType" :placeholder="t('users.createDialog.providerPlaceholder')" />
       </div>
       <template #footer>
-        <Button label="Cancel" text @click="createOpen = false" />
-        <Button label="Create" icon="pi pi-check" @click="submitCreate" />
+        <Button :label="t('common.cancel')" text @click="createOpen = false" />
+        <Button :label="t('common.create')" icon="pi pi-check" @click="submitCreate" />
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="passwordDialogOpen" header="Reset password" modal :style="{ width: '24rem' }">
+    <Dialog v-model:visible="passwordDialogOpen" :header="t('users.passwordDialog.title')" modal :style="{ width: '24rem' }">
       <p class="text-sm text-surface-600 dark:text-surface-300 mb-2">
-        New password for <strong>{{ passwordTarget?.loginId }}</strong>
+        {{ t('users.passwordDialog.prompt', { loginId: passwordTarget?.loginId ?? '' }) }}
       </p>
       <Password v-model="newPassword" :feedback="false" toggle-mask fluid />
       <template #footer>
-        <Button label="Cancel" text @click="passwordDialogOpen = false" />
-        <Button label="Reset" icon="pi pi-check" @click="submitPassword" />
+        <Button :label="t('common.cancel')" text @click="passwordDialogOpen = false" />
+        <Button :label="t('common.reset')" icon="pi pi-check" @click="submitPassword" />
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="statusDialogOpen" header="Change status" modal :style="{ width: '24rem' }">
+    <Dialog v-model:visible="statusDialogOpen" :header="t('users.statusDialog.title')" modal :style="{ width: '24rem' }">
       <p class="text-sm text-surface-600 dark:text-surface-300 mb-2">
-        Status for <strong>{{ statusTarget?.loginId }}</strong>
+        {{ t('users.statusDialog.prompt', { loginId: statusTarget?.loginId ?? '' }) }}
       </p>
       <Select v-model="newStatus" :options="statusOptions" fluid />
       <template #footer>
-        <Button label="Cancel" text @click="statusDialogOpen = false" />
-        <Button label="Save" icon="pi pi-check" @click="submitStatus" />
+        <Button :label="t('common.cancel')" text @click="statusDialogOpen = false" />
+        <Button :label="t('common.save')" icon="pi pi-check" @click="submitStatus" />
       </template>
     </Dialog>
   </div>

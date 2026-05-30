@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -14,6 +15,7 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const rows = ref<PolicyDescriptor[]>([])
 const loading = ref(false)
@@ -45,7 +47,7 @@ async function reload() {
   try {
     rows.value = await policiesApi.list()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Failed to load policies', detail: msg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('policies.toasts.loadFailed'), detail: msg(e), life: 4000 })
   } finally {
     loading.value = false
   }
@@ -60,7 +62,7 @@ function openTest(row: PolicyDescriptor) {
 async function runTest() {
   if (!testTarget.value) return
   if (!subjectAttrsValid.value || !resourceAttrsValid.value || !environmentValid.value) {
-    toast.add({ severity: 'warn', summary: 'Fix the JSON inputs first', life: 3000 })
+    toast.add({ severity: 'warn', summary: t('policies.testDialog.jsonInvalid'), life: 3000 })
     return
   }
   testRunning.value = true
@@ -82,7 +84,7 @@ async function runTest() {
       environment: safeParse(testForm.value.environment).value,
     })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Policy test failed', detail: msg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('policies.toasts.testFailed'), detail: msg(e), life: 4000 })
   } finally {
     testRunning.value = false
   }
@@ -115,13 +117,12 @@ onMounted(reload)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">Policies (ABAC)</h1>
-      <Button icon="pi pi-refresh" severity="secondary" outlined @click="reload" />
+      <h1 class="text-xl font-semibold">{{ t('policies.title') }}</h1>
+      <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
     </div>
 
     <Message severity="info" :closable="false">
-      These are the policies registered with the ABAC <code>PolicyEvaluator</code>.
-      Use <strong>Test</strong> to dry-run a (subject, action, resource) tuple without persisting anything.
+      {{ t('policies.intro') }}
     </Message>
 
     <DataTable
@@ -132,52 +133,52 @@ onMounted(reload)
       :rows="15"
       data-key="name"
     >
-      <Column field="name" header="Name" sortable />
-      <Column field="description" header="Description">
+      <Column field="name" :header="t('policies.columns.name')" sortable />
+      <Column field="description" :header="t('policies.columns.description')">
         <template #body="{ data }">
           <span class="text-surface-600 dark:text-surface-300">{{ data.description ?? '—' }}</span>
         </template>
       </Column>
       <Column header="" style="width: 8rem; text-align: right">
         <template #body="{ data }">
-          <Button icon="pi pi-play" text rounded aria-label="Test" @click="openTest(data)" />
+          <Button icon="pi pi-play" text rounded :aria-label="t('policies.ariaTest')" @click="openTest(data)" />
         </template>
       </Column>
     </DataTable>
 
-    <Dialog v-model:visible="testOpen" header="Test policy (dry-run)" modal :style="{ width: '36rem' }">
+    <Dialog v-model:visible="testOpen" :header="t('policies.testDialog.title')" modal :style="{ width: '36rem' }">
       <p class="text-sm text-surface-600 dark:text-surface-300 mb-3">
-        Evaluating <strong>{{ testTarget?.name }}</strong>
+        {{ t('policies.testDialog.target', { name: testTarget?.name ?? '' }) }}
       </p>
 
       <div class="flex flex-col gap-3">
         <div class="grid grid-cols-2 gap-3">
-          <InputText v-model="testForm.userId" placeholder="Subject userId" />
-          <InputText v-model="testForm.tenantId" placeholder="Subject tenantId" />
+          <InputText v-model="testForm.userId" :placeholder="t('policies.testDialog.userIdPlaceholder')" />
+          <InputText v-model="testForm.tenantId" :placeholder="t('policies.testDialog.tenantIdPlaceholder')" />
         </div>
         <Textarea
           v-model="testForm.subjectAttrs"
           rows="3"
-          placeholder='Subject attributes (JSON, e.g. {"role":"admin"})'
+          :placeholder="t('policies.testDialog.subjectAttrsPlaceholder')"
           :class="{ 'p-invalid': !subjectAttrsValid }"
           auto-resize
         />
-        <InputText v-model="testForm.action" placeholder="Action (e.g. read, write)" />
+        <InputText v-model="testForm.action" :placeholder="t('policies.testDialog.actionPlaceholder')" />
         <div class="grid grid-cols-2 gap-3">
-          <InputText v-model="testForm.resourceType" placeholder="Resource type" />
-          <InputText v-model="testForm.resourceId" placeholder="Resource id (optional)" />
+          <InputText v-model="testForm.resourceType" :placeholder="t('policies.testDialog.resourceTypePlaceholder')" />
+          <InputText v-model="testForm.resourceId" :placeholder="t('policies.testDialog.resourceIdPlaceholder')" />
         </div>
         <Textarea
           v-model="testForm.resourceAttrs"
           rows="3"
-          placeholder='Resource attributes (JSON)'
+          :placeholder="t('policies.testDialog.resourceAttrsPlaceholder')"
           :class="{ 'p-invalid': !resourceAttrsValid }"
           auto-resize
         />
         <Textarea
           v-model="testForm.environment"
           rows="2"
-          placeholder='Environment attributes (JSON)'
+          :placeholder="t('policies.testDialog.environmentPlaceholder')"
           :class="{ 'p-invalid': !environmentValid }"
           auto-resize
         />
@@ -185,13 +186,13 @@ onMounted(reload)
 
       <div v-if="testResult" class="mt-4 p-3 rounded border border-surface-200 dark:border-surface-700">
         <div class="flex items-center gap-2 mb-2">
-          <strong>Effect:</strong>
+          <strong>{{ t('policies.testDialog.effect') }}:</strong>
           <Tag :value="testResult.effect" :severity="effectSeverity(testResult.effect)" />
         </div>
         <div class="text-sm">
-          <div><strong>Reason:</strong> {{ testResult.reason ?? '—' }}</div>
+          <div><strong>{{ t('policies.testDialog.reason') }}:</strong> {{ testResult.reason ?? '—' }}</div>
           <div class="mt-1">
-            <strong>Matched rules:</strong>
+            <strong>{{ t('policies.testDialog.matched') }}:</strong>
             <span v-if="testResult.matchedRules.length === 0">—</span>
             <ul v-else class="list-disc list-inside">
               <li v-for="r in testResult.matchedRules" :key="r">{{ r }}</li>
@@ -201,8 +202,8 @@ onMounted(reload)
       </div>
 
       <template #footer>
-        <Button label="Close" text @click="testOpen = false" />
-        <Button label="Run test" icon="pi pi-play" :loading="testRunning" @click="runTest" />
+        <Button :label="t('common.close')" text @click="testOpen = false" />
+        <Button :label="t('policies.testDialog.run')" icon="pi pi-play" :loading="testRunning" @click="runTest" />
       </template>
     </Dialog>
   </div>
