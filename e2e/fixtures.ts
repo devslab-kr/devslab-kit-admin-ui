@@ -131,9 +131,21 @@ export async function installApiMocks(page: Page) {
   })
 }
 
+/**
+ * True when the suite runs against a live `devslab-kit` sample-app
+ * (set `E2E_BACKEND=real`). In that mode the API mocks are skipped and the
+ * SPA talks to the real backend through the Vite dev proxy.
+ */
+export const REAL_BACKEND = process.env.E2E_BACKEND === 'real'
+
+/** Credentials seeded by the sample-app's SampleSeedRunner. */
+export const REAL_ADMIN = { tenantId: 'default', loginId: 'admin', password: 'admin' }
+
 export const test = base.extend({
   page: async ({ page }, use) => {
-    await installApiMocks(page)
+    if (!REAL_BACKEND) {
+      await installApiMocks(page)
+    }
     await use(page)
   },
 })
