@@ -8,7 +8,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import { rolesApi, type Role } from '@/api/roles'
+import { groupsApi, type Group } from '@/api/groups'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -17,34 +17,35 @@ const confirm = useConfirm()
 const { t } = useI18n()
 
 const tenantId = ref(auth.user?.tenantId ?? 'default')
-const rows = ref<Role[]>([])
+const rows = ref<Group[]>([])
 const loading = ref(false)
+
 const createOpen = ref(false)
 const renameOpen = ref(false)
-const newRole = ref({ code: '', name: '' })
-const renameTarget = ref<Role | null>(null)
+const newGroup = ref({ code: '', name: '' })
+const renameTarget = ref<Group | null>(null)
 const renameValue = ref('')
 
 async function reload() {
   loading.value = true
   try {
-    rows.value = await rolesApi.list(tenantId.value)
+    rows.value = await groupsApi.list(tenantId.value)
   } catch (e) {
-    toast.add({ severity: 'error', summary: t('roles.toasts.loadFailed'), detail: msg(e), life: 4000 })
+    toast.add({ severity: 'error', summary: t('groups.toasts.loadFailed'), detail: msg(e), life: 4000 })
   } finally {
     loading.value = false
   }
 }
 
 function openCreate() {
-  newRole.value = { code: '', name: '' }
+  newGroup.value = { code: '', name: '' }
   createOpen.value = true
 }
 
 async function submitCreate() {
   try {
-    await rolesApi.create({ tenantId: tenantId.value, code: newRole.value.code, name: newRole.value.name })
-    toast.add({ severity: 'success', summary: t('roles.toasts.created'), life: 2500 })
+    await groupsApi.create({ tenantId: tenantId.value, code: newGroup.value.code, name: newGroup.value.name })
+    toast.add({ severity: 'success', summary: t('groups.toasts.created'), life: 2500 })
     createOpen.value = false
     await reload()
   } catch (e) {
@@ -52,7 +53,7 @@ async function submitCreate() {
   }
 }
 
-function openRename(row: Role) {
+function openRename(row: Group) {
   renameTarget.value = row
   renameValue.value = row.name
   renameOpen.value = true
@@ -61,8 +62,8 @@ function openRename(row: Role) {
 async function submitRename() {
   if (!renameTarget.value) return
   try {
-    await rolesApi.rename(renameTarget.value.id.value, renameValue.value)
-    toast.add({ severity: 'success', summary: t('roles.toasts.renamed'), life: 2500 })
+    await groupsApi.rename(renameTarget.value.id.value, renameValue.value)
+    toast.add({ severity: 'success', summary: t('groups.toasts.renamed'), life: 2500 })
     renameOpen.value = false
     await reload()
   } catch (e) {
@@ -70,16 +71,16 @@ async function submitRename() {
   }
 }
 
-function confirmDelete(row: Role) {
+function confirmDelete(row: Group) {
   confirm.require({
-    message: t('roles.deleteConfirm.message', { code: row.code }),
-    header: t('roles.deleteConfirm.header'),
+    message: t('groups.deleteConfirm.message', { code: row.code }),
+    header: t('groups.deleteConfirm.header'),
     icon: 'pi pi-exclamation-triangle',
     acceptClass: 'p-button-danger',
     accept: async () => {
       try {
-        await rolesApi.remove(row.id.value)
-        toast.add({ severity: 'success', summary: t('roles.toasts.deleted'), life: 2500 })
+        await groupsApi.remove(row.id.value)
+        toast.add({ severity: 'success', summary: t('groups.toasts.deleted'), life: 2500 })
         await reload()
       } catch (e) {
         toast.add({ severity: 'error', summary: t('toasts.deleteFailed'), detail: msg(e), life: 4000 })
@@ -102,7 +103,7 @@ onMounted(reload)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('roles.title') }}</h1>
+      <h1 class="text-xl font-semibold">{{ t('groups.title') }}</h1>
       <div class="flex items-center gap-2">
         <InputText v-model="tenantId" :placeholder="t('common.tenantId')" class="w-48" />
         <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
@@ -135,10 +136,10 @@ onMounted(reload)
       </Column>
     </DataTable>
 
-    <Dialog v-model:visible="createOpen" :header="t('roles.createDialog.title')" modal :style="{ width: '24rem' }">
+    <Dialog v-model:visible="createOpen" :header="t('groups.createDialog.title')" modal :style="{ width: '24rem' }">
       <div class="flex flex-col gap-3 pt-2">
-        <InputText v-model="newRole.code" :placeholder="t('roles.createDialog.codePlaceholder')" />
-        <InputText v-model="newRole.name" :placeholder="t('roles.createDialog.namePlaceholder')" />
+        <InputText v-model="newGroup.code" :placeholder="t('groups.createDialog.codePlaceholder')" />
+        <InputText v-model="newGroup.name" :placeholder="t('groups.createDialog.namePlaceholder')" />
       </div>
       <template #footer>
         <Button :label="t('common.cancel')" text @click="createOpen = false" />
@@ -146,9 +147,9 @@ onMounted(reload)
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="renameOpen" :header="t('roles.renameDialog.title')" modal :style="{ width: '24rem' }">
+    <Dialog v-model:visible="renameOpen" :header="t('groups.renameDialog.title')" modal :style="{ width: '24rem' }">
       <p class="text-sm text-surface-600 dark:text-surface-300 mb-2">
-        {{ t('roles.renameDialog.prompt', { code: renameTarget?.code ?? '' }) }}
+        {{ t('groups.renameDialog.prompt', { code: renameTarget?.code ?? '' }) }}
       </p>
       <InputText v-model="renameValue" fluid />
       <template #footer>

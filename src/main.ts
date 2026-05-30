@@ -1,5 +1,36 @@
 import { createApp } from 'vue'
-import './style.css'
-import App from './App.vue'
+import { createPinia } from 'pinia'
+import PrimeVue from 'primevue/config'
+import Aura from '@primevue/themes/aura'
+import ToastService from 'primevue/toastservice'
+import ConfirmationService from 'primevue/confirmationservice'
 
-createApp(App).mount('#app')
+import './style.css'
+
+import App from './App.vue'
+import router from './router'
+import { i18n, getLocale } from './i18n'
+import { useUiStore } from './stores/ui'
+
+const app = createApp(App)
+
+app.use(createPinia())
+app.use(router)
+app.use(i18n)
+document.documentElement.setAttribute('lang', getLocale())
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: '.dark',
+      cssLayer: false,
+    },
+  },
+})
+app.use(ToastService)
+app.use(ConfirmationService)
+
+// Apply the persisted theme before mount so the first paint matches.
+useUiStore().applyTheme()
+
+app.mount('#app')

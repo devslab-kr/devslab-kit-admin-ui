@@ -2,35 +2,31 @@
 
 [한국어 README](README.ko.md)
 
-Vue 3 admin console for [devslab-kr/devslab-kit](https://github.com/devslab-kr/devslab-kit) — manage and monitor every feature the platform starter exposes.
+Vue 3 admin console for [devslab-kr/devslab-kit](https://github.com/devslab-kr/devslab-kit) — manages and observes every capability the platform starter exposes.
 
-## Status
+## What it covers
 
-> **Scaffold + infra stage.** Login / Layout / placeholders + Docker Compose for Postgres/Redis are in place. CRUD pages, real backend integration, Playwright E2E, i18n, and packaging land in subsequent PRs.
+Not a thin CRUD form — a **full admin console** for everything `devslab-kit` ships:
 
-## Goals
+| Area | Pages |
+| --- | --- |
+| Identity / Access | Users · Roles · Permissions · Groups (hierarchical members + role grants) · ABAC Policies (with dry-run tester) |
+| Platform | Tenants · Menus (TreeTable with permission-gated nodes) · runtime Settings (`devslab.kit.*` properties read-only) |
+| Observability | Dashboard (KPI cards + recent audit events) · Audit Logs (filterable, lazy-paginated, JSON payload viewer) · Diagnostics (login tester, permission tester, menu-visibility tester) |
 
-This is not just a CRUD UI on top of `devslab-kit-admin-api`. It is intended as the **full admin console** for everything the kit exposes:
-
-- Identity / Access — Users · Roles · Permissions · Groups (incl. hierarchy) · ABAC Policies
-- Platform — Tenants · Menus · runtime Settings (`devslab.kit.*` properties)
-- Observability — Dashboard (KPIs + custom metrics) · Audit Logs · Diagnostics
-  (login tester, permission tester, menu visibility tester) · Migration status
-- Docs — embedded OpenAPI / Swagger UI (when backend ships springdoc-compatible release)
-
-## Tech stack
+## Stack
 
 | Layer | Choice |
-| ----- | ------ |
+| --- | --- |
 | Framework | Vue 3 + `<script setup>` + TypeScript |
-| Build | Vite |
-| UI library | PrimeVue 4 + Tailwind CSS 4 + `tailwindcss-primeui` |
-| Theme | Aura preset, light + dark with toggle |
+| Build | Vite 8 |
+| UI | PrimeVue 4 + Tailwind CSS 4 + `tailwindcss-primeui` + PrimeIcons |
+| Theme | `Aura` preset, light + dark toggle (`.dark` selector) |
 | State | Pinia |
 | Routing | Vue Router (history mode, route-level lazy loading) |
-| HTTP | axios with `Authorization: Bearer` interceptor and 401 → `/login` redirect |
+| HTTP | axios + `Authorization: Bearer` interceptor + `401 → /login` redirect |
 | Composables | `@vueuse/core` |
-| Auth | JWT (HS256) issued by `devslab-kit-admin-api`, stored in `localStorage` |
+| Auth | JWT (HS256), issued by `devslab-kit-admin-api`, stored in `localStorage` |
 
 ## Local dev (3 terminals)
 
@@ -49,7 +45,7 @@ Healthchecks ensure both are ready before you start the backend.
 ./gradlew :devslab-kit-sample-app:bootRun
 ```
 
-Backend listens on `http://localhost:8080` and connects to the Postgres / Redis containers above. Flyway runs V1..V7 on first boot.
+Backend listens on `http://localhost:8080` and connects to the Postgres / Redis containers above. Flyway runs V1..V10 on first boot.
 
 ### Terminal 3 — Vite dev (this repo)
 
@@ -58,20 +54,22 @@ npm install           # first time only
 npm run dev
 ```
 
-Dev server: `http://localhost:5173`. Vite proxies `/admin/api/**` → `http://localhost:8080`, so the UI talks to the backend without CORS.
+Dev server starts at `http://localhost:5173`. Vite proxies `/admin/api/**` → `http://localhost:8080`, so the UI talks to a locally-running `devslab-kit-sample-app` (or any consumer of `devslab-kit-spring-boot-starter`) with **no CORS dance**.
 
 ## Useful npm scripts
 
 ```bash
-npm run dev           # vite dev server
-npm run build         # type-check + production bundle
-npm run preview       # preview the production bundle locally
-npm run compose:up    # docker compose up -d
-npm run compose:down  # docker compose down (keeps the postgres volume)
-npm run compose:logs  # follow logs from postgres/redis
+npm run dev               # vite dev server
+npm run build             # type-check + production bundle
+npm run preview           # preview the production bundle locally
+npm run compose:up        # docker compose up -d
+npm run compose:down      # docker compose down (keeps the postgres volume)
+npm run compose:logs      # follow logs from postgres/redis
+npm run test:e2e          # Playwright smoke tests (build + preview underneath)
+npm run test:e2e:install  # CI bootstrap — download the Chromium browser
 ```
 
-`VITE_ADMIN_API_BASE_URL` overrides the API base URL at build time:
+Override the API base at build time:
 
 ```bash
 VITE_ADMIN_API_BASE_URL=https://your.api.example.com/admin/api/v1 npm run build
@@ -82,19 +80,54 @@ VITE_ADMIN_API_BASE_URL=https://your.api.example.com/admin/api/v1 npm run build
 ```
 src/
 ├─ api/           ← axios client + per-resource wrappers
-├─ stores/        ← Pinia stores (auth, ui)
-├─ router/        ← Vue Router config + nav guards
-├─ layout/        ← AppLayout (sidebar + header)
-├─ views/         ← page-level components
+├─ stores/        ← Pinia (auth, ui)
+├─ router/        ← Vue Router + nav guards
+├─ layout/        ← AppLayout (sidebar + header + theme toggle + sign-out)
+├─ views/         ← page components (one per admin surface)
+├─ i18n/          ← vue-i18n setup + ko/en message bundles
 ├─ App.vue
 ├─ main.ts
-└─ style.css      ← Tailwind + PrimeVue + PrimeIcons
-docker-compose.yml ← postgres + redis for local dev / E2E
+└─ style.css      ← Tailwind + tailwindcss-primeui + PrimeIcons
+docker-compose.yml ← postgres + redis + admin-ui for local dev / E2E
+e2e/              ← Playwright smoke tests (login + dashboard + i18n toggle)
 ```
 
-## Deploy
+## Container build
 
-Static SPA → nginx (`Dockerfile` + `nginx.conf` land in Phase D).
+Multi-stage Dockerfile (`node:24-alpine` to build, `nginx:1.27-alpine` to serve):
+
+```bash
+docker build -t devslab-kit-admin-ui .
+docker run --rm -p 8081:80 devslab-kit-admin-ui
+# → http://localhost:8081 (serves the SPA + reverse-proxies /admin/api/* to host `admin-api:8080`)
+```
+
+The bundled `nginx.conf` does three things worth knowing:
+
+1. SPA fallback (`try_files $uri $uri/ /index.html`) so Vue Router owns client-side routing.
+2. Long-immutable cache headers on `/assets/` (Vite hashes the filenames).
+3. Reverse-proxy on `/admin/api/*` → `http://admin-api:8080`, so the browser never sees a CORS preflight in production.
+
+## Local stack (docker-compose)
+
+`docker-compose.yml` boots postgres + redis (the sample-app's backing services) and the admin UI container. Bring the `devslab-kit-sample-app` up separately, pointing it at the published ports.
+
+```bash
+docker compose up --build
+# → admin UI: http://localhost:8081
+# → postgres: localhost:5432   (devslab / devslab / devslab_kit)
+# → redis:    localhost:6379
+```
+
+## CI
+
+`.github/workflows/ci.yml` runs on push/PR to `main`:
+
+1. `npm ci`
+2. `npm run build` (vue-tsc type-check + Vite production build)
+3. Upload `dist/` as a build artifact
+4. Playwright smoke (5 tests, Chromium, mocked `/admin/api/**`)
+5. Build the Docker image with Buildx + GitHub Actions cache (no push)
 
 ## License
 

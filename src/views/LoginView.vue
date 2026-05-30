@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
@@ -13,6 +14,7 @@ const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
+const { t } = useI18n()
 
 const tenantId = ref('default')
 const loginId = ref('')
@@ -32,12 +34,12 @@ async function submit() {
     const next = (route.query.redirect as string | undefined) ?? '/'
     router.replace(next)
   } catch (err: unknown) {
-    let message = 'Login failed'
+    let message = t('login.failed')
     if (err && typeof err === 'object' && 'response' in err) {
       const resp = (err as { response?: { data?: { message?: string } } }).response
       message = resp?.data?.message ?? message
     }
-    toast.add({ severity: 'error', summary: 'Login failed', detail: message, life: 4000 })
+    toast.add({ severity: 'error', summary: t('login.failed'), detail: message, life: 4000 })
   } finally {
     submitting.value = false
   }
@@ -50,21 +52,21 @@ async function submit() {
       <template #title>
         <div class="flex items-center gap-2">
           <i class="pi pi-shield text-primary text-2xl"></i>
-          <span>devslab-kit admin</span>
+          <span>{{ t('app.title') }}</span>
         </div>
       </template>
       <template #content>
         <form class="flex flex-col gap-4" @submit.prevent="submit">
           <div class="flex flex-col gap-1">
-            <label for="tenantId" class="text-sm font-medium">Tenant</label>
+            <label for="tenantId" class="text-sm font-medium">{{ t('login.tenant') }}</label>
             <InputText id="tenantId" v-model="tenantId" autocomplete="organization" />
           </div>
           <div class="flex flex-col gap-1">
-            <label for="loginId" class="text-sm font-medium">Login ID</label>
+            <label for="loginId" class="text-sm font-medium">{{ t('login.loginId') }}</label>
             <InputText id="loginId" v-model="loginId" autocomplete="username" required />
           </div>
           <div class="flex flex-col gap-1">
-            <label for="rawPassword" class="text-sm font-medium">Password</label>
+            <label for="rawPassword" class="text-sm font-medium">{{ t('login.password') }}</label>
             <Password
               input-id="rawPassword"
               v-model="rawPassword"
@@ -74,7 +76,13 @@ async function submit() {
               fluid
             />
           </div>
-          <Button type="submit" :loading="submitting" :disabled="submitting" label="Sign in" icon="pi pi-sign-in" />
+          <Button
+            type="submit"
+            :loading="submitting"
+            :disabled="submitting"
+            :label="t('login.submit')"
+            icon="pi pi-sign-in"
+          />
         </form>
       </template>
     </Card>

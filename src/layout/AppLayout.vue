@@ -1,47 +1,50 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter, useRoute, RouterView } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import Menu from 'primevue/menu'
 import Button from 'primevue/button'
 import { useAuthStore } from '@/stores/auth'
 import { useUiStore } from '@/stores/ui'
+import { getLocale, setLocale } from '@/i18n'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const ui = useUiStore()
+const { t } = useI18n()
 
-const navGroups = [
+const navGroups = computed(() => [
   {
-    label: 'Identity & Access',
+    label: t('nav.groups.identity'),
     items: [
-      { label: 'Users', icon: 'pi pi-user', route: 'users' },
-      { label: 'Roles', icon: 'pi pi-id-card', route: 'roles' },
-      { label: 'Permissions', icon: 'pi pi-key', route: 'permissions' },
-      { label: 'Groups', icon: 'pi pi-users', route: 'groups' },
+      { label: t('nav.users'), icon: 'pi pi-user', route: 'users' },
+      { label: t('nav.roles'), icon: 'pi pi-id-card', route: 'roles' },
+      { label: t('nav.permissions'), icon: 'pi pi-key', route: 'permissions' },
+      { label: t('nav.groupsItem'), icon: 'pi pi-users', route: 'groups' },
     ],
   },
   {
-    label: 'Platform',
+    label: t('nav.groups.platform'),
     items: [
-      { label: 'Menus', icon: 'pi pi-list', route: 'menus' },
-      { label: 'Tenants', icon: 'pi pi-building', route: 'tenants' },
-      { label: 'Policies', icon: 'pi pi-shield', route: 'policies' },
-      { label: 'Settings', icon: 'pi pi-cog', route: 'settings' },
+      { label: t('nav.menus'), icon: 'pi pi-list', route: 'menus' },
+      { label: t('nav.tenants'), icon: 'pi pi-building', route: 'tenants' },
+      { label: t('nav.policies'), icon: 'pi pi-shield', route: 'policies' },
+      { label: t('nav.settings'), icon: 'pi pi-cog', route: 'settings' },
     ],
   },
   {
-    label: 'Observability',
+    label: t('nav.groups.observability'),
     items: [
-      { label: 'Dashboard', icon: 'pi pi-chart-bar', route: 'dashboard' },
-      { label: 'Diagnostics', icon: 'pi pi-bolt', route: 'diagnostics' },
-      { label: 'Audit Logs', icon: 'pi pi-history', route: 'audit-logs' },
+      { label: t('nav.dashboard'), icon: 'pi pi-chart-bar', route: 'dashboard' },
+      { label: t('nav.diagnostics'), icon: 'pi pi-bolt', route: 'diagnostics' },
+      { label: t('nav.auditLogs'), icon: 'pi pi-history', route: 'audit-logs' },
     ],
   },
-]
+])
 
 const menuItems = computed(() =>
-  navGroups.map((group) => ({
+  navGroups.value.map((group) => ({
     label: group.label,
     items: group.items.map((it) => ({
       label: it.label,
@@ -56,6 +59,10 @@ function signOut() {
   auth.clear()
   router.push({ name: 'login' })
 }
+
+function toggleLocale() {
+  setLocale(getLocale() === 'ko' ? 'en' : 'ko')
+}
 </script>
 
 <template>
@@ -63,7 +70,7 @@ function signOut() {
     <aside class="w-64 shrink-0 border-r border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-950 flex flex-col">
       <div class="px-4 py-4 border-b border-surface-200 dark:border-surface-800 flex items-center gap-2">
         <i class="pi pi-shield text-primary"></i>
-        <span class="font-semibold">devslab-kit</span>
+        <span class="font-semibold">{{ t('app.title') }}</span>
       </div>
       <div class="flex-1 overflow-y-auto py-2">
         <Menu :model="menuItems" class="border-0 w-full" />
@@ -79,15 +86,32 @@ function signOut() {
           <Button
             text
             rounded
+            severity="secondary"
+            :aria-label="t('app.toggleLocale')"
+            data-testid="locale-toggle"
+            @click="toggleLocale"
+          >
+            <span class="text-xs font-semibold uppercase">{{ getLocale() }}</span>
+          </Button>
+          <Button
+            text
+            rounded
             :icon="ui.theme === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
             severity="secondary"
-            aria-label="Toggle theme"
+            :aria-label="t('app.toggleTheme')"
             @click="ui.toggleTheme()"
           />
           <div class="text-sm text-surface-700 dark:text-surface-300 px-2">
             {{ auth.user?.loginId ?? '—' }}
           </div>
-          <Button text rounded icon="pi pi-sign-out" severity="secondary" aria-label="Sign out" @click="signOut" />
+          <Button
+            text
+            rounded
+            icon="pi pi-sign-out"
+            severity="secondary"
+            :aria-label="t('app.signOut')"
+            @click="signOut"
+          />
         </div>
       </header>
 
