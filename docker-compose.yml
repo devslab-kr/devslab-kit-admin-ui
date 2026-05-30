@@ -1,0 +1,39 @@
+name: devslab-kit-admin-ui-dev
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: devslab
+      POSTGRES_USER: devslab
+      POSTGRES_PASSWORD: devslab
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devslab -d devslab"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # sample-app intentionally omitted from compose:
+  # - it lives in a sibling repo (devslab-kr/devslab-kit) and shouldn't be
+  #   copy-pasted in here
+  # - run it from that repo with `./gradlew :devslab-kit-sample-app:bootRun`
+  #   and Vite dev (port 5173) will proxy /admin/api -> http://localhost:8080
+  # - Playwright E2E (next PR) will build + run a sample-app docker image
+  #   on demand, so the static compose file stays small.
+
+volumes:
+  postgres-data:
