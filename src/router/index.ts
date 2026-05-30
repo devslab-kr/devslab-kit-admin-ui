@@ -26,14 +26,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'roles',
         name: 'roles',
-        component: () => import('@/views/PlaceholderView.vue'),
-        meta: { title: 'Roles' },
+        component: () => import('@/views/RolesView.vue'),
       },
       {
         path: 'permissions',
         name: 'permissions',
-        component: () => import('@/views/PlaceholderView.vue'),
-        meta: { title: 'Permissions' },
+        component: () => import('@/views/PermissionsView.vue'),
       },
       {
         path: 'groups',

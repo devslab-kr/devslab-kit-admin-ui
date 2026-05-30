@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
+import Toast from 'primevue/toast'
+import ConfirmDialog from 'primevue/confirmdialog'
 </script>
 
 <template>
-  <HelloWorld />
+  <RouterView />
+  <Toast />
+  <ConfirmDialog />
 </template>
