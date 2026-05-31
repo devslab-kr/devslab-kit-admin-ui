@@ -345,7 +345,7 @@ export default {
       tenant: '테넌트 resolver',
       identity: '아이덴티티',
       audit: '감사',
-      menu: '메뉴',
+      cache: '캐시',
       raw: '원본 devslab.* 속성',
     },
     fields: {
@@ -357,7 +357,9 @@ export default {
       lockoutDurationSeconds: '잠금 지속 시간',
       enabled: '활성화',
       asyncQueueCapacity: '비동기 큐 capacity',
+      cacheType: '유형',
       cacheTtlSeconds: '캐시 TTL (초)',
+      cacheKeyPrefix: '키 prefix',
     },
     yes: '예',
     no: '아니오',

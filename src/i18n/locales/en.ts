@@ -345,7 +345,7 @@ export default {
       tenant: 'Tenant resolver',
       identity: 'Identity',
       audit: 'Audit',
-      menu: 'Menu',
+      cache: 'Cache',
       raw: 'Raw devslab.* properties',
     },
     fields: {
@@ -357,7 +357,9 @@ export default {
       lockoutDurationSeconds: 'Lockout duration',
       enabled: 'Enabled',
       asyncQueueCapacity: 'Async queue capacity',
+      cacheType: 'Type',
       cacheTtlSeconds: 'Cache TTL (seconds)',
+      cacheKeyPrefix: 'Key prefix',
     },
     yes: 'yes',
     no: 'no',
