@@ -5,6 +5,10 @@ export default {
     toggleTheme: '테마 전환',
     toggleLocale: '언어 전환',
   },
+  account: {
+    menu: '계정',
+    changePassword: '비밀번호 변경',
+  },
   nav: {
     groups: {
       identity: '아이덴티티 / 접근',
@@ -33,6 +37,8 @@ export default {
   changePassword: {
     title: '비밀번호 변경',
     subtitle: '계속하려면 새 비밀번호를 설정해야 합니다.',
+    titleVoluntary: '비밀번호 변경',
+    subtitleVoluntary: '내 계정의 비밀번호를 변경합니다.',
     current: '현재 비밀번호',
     new: '새 비밀번호',
     confirm: '새 비밀번호 확인',
