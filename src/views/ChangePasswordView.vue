@@ -55,6 +55,11 @@ function resetForm() {
 
 async function submit() {
   if (!canSubmit.value) return
+  // Capture the mode BEFORE the call: setSession() below clears the must-change
+  // flag, which flips `forced` to false. Reading forced.value afterwards would
+  // always take the voluntary branch and strand a just-unflagged bootstrap
+  // admin on this screen.
+  const wasForced = forced.value
   submitting.value = true
   try {
     const result = await authApi.changePassword({
@@ -69,7 +74,7 @@ async function submit() {
       summary: t('changePassword.toastSuccess'),
       life: 3000,
     })
-    if (forced.value) {
+    if (wasForced) {
       router.replace({ name: 'dashboard' })
     } else {
       // Voluntary: stay put, just clear the form for reuse.
