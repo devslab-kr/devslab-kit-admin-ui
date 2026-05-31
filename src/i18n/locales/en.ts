@@ -5,6 +5,10 @@ export default {
     toggleTheme: 'Toggle theme',
     toggleLocale: 'Toggle language',
   },
+  account: {
+    menu: 'Account',
+    changePassword: 'Change password',
+  },
   nav: {
     groups: {
       identity: 'Identity & Access',
@@ -33,6 +37,8 @@ export default {
   changePassword: {
     title: 'Change your password',
     subtitle: 'You must set a new password before continuing.',
+    titleVoluntary: 'Change password',
+    subtitleVoluntary: 'Update the password for your account.',
     current: 'Current password',
     new: 'New password',
     confirm: 'Confirm new password',

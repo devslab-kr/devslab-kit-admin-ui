@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter, useRoute, RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Menu from 'primevue/menu'
@@ -13,6 +13,26 @@ const route = useRoute()
 const auth = useAuthStore()
 const ui = useUiStore()
 const { t } = useI18n()
+
+// Account dropdown anchored on the header username. PrimeVue's Menu in popup
+// mode exposes toggle(event); type just that surface to avoid depending on an
+// unexported component type.
+const accountMenu = ref<{ toggle: (event: Event) => void } | null>(null)
+const accountMenuItems = computed(() => [
+  {
+    label: t('account.changePassword'),
+    icon: 'pi pi-key',
+    command: () => router.push({ name: 'account-change-password' }),
+  },
+  {
+    label: t('app.signOut'),
+    icon: 'pi pi-sign-out',
+    command: () => signOut(),
+  },
+])
+function toggleAccountMenu(event: Event) {
+  accountMenu.value?.toggle(event)
+}
 
 const navGroups = computed(() => [
   {
@@ -101,17 +121,19 @@ function toggleLocale() {
             :aria-label="t('app.toggleTheme')"
             @click="ui.toggleTheme()"
           />
-          <div class="text-sm text-surface-700 dark:text-surface-300 px-2">
-            {{ auth.user?.loginId ?? '—' }}
-          </div>
           <Button
             text
-            rounded
-            icon="pi pi-sign-out"
             severity="secondary"
-            :aria-label="t('app.signOut')"
-            @click="signOut"
+            class="text-sm"
+            icon="pi pi-user"
+            icon-pos="left"
+            :label="auth.user?.loginId ?? '—'"
+            aria-haspopup="true"
+            aria-controls="account-menu"
+            data-testid="account-menu-button"
+            @click="toggleAccountMenu"
           />
+          <Menu id="account-menu" ref="accountMenu" :model="accountMenuItems" :popup="true" />
         </div>
       </header>
 
