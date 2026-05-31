@@ -31,6 +31,11 @@ async function submit() {
       rawPassword: rawPassword.value,
     })
     auth.setSession(result.token, result.user)
+    if (auth.mustChangePassword) {
+      // Forced rotation takes precedence over any redirect target.
+      router.replace({ name: 'change-password' })
+      return
+    }
     const next = (route.query.redirect as string | undefined) ?? '/'
     router.replace(next)
   } catch (err: unknown) {

@@ -11,6 +11,8 @@ export interface CurrentUser {
   loginId: string
   email?: string | null
   status: string
+  roles?: string[]
+  mustChangePassword?: boolean
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -19,6 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(userJson ? JSON.parse(userJson) : null)
 
   const isAuthenticated = computed(() => token.value !== null)
+  const mustChangePassword = computed(() => user.value?.mustChangePassword === true)
 
   function setSession(newToken: string, newUser: CurrentUser) {
     token.value = newToken
@@ -34,5 +37,5 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(USER_KEY)
   }
 
-  return { token, user, isAuthenticated, setSession, clear }
+  return { token, user, isAuthenticated, mustChangePassword, setSession, clear }
 })
