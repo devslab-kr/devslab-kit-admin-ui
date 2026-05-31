@@ -138,7 +138,11 @@ export async function installApiMocks(page: Page) {
  */
 export const REAL_BACKEND = process.env.E2E_BACKEND === 'real'
 
-/** Credentials seeded by the sample-app's SampleSeedRunner. */
+/**
+ * Credentials provisioned by the sample-app's devslab.kit.bootstrap runner
+ * (local-dev shape: admin/admin, must-change-password off). See devslab-kit
+ * ADR 0001 — this replaced the old SampleSeedRunner.
+ */
 export const REAL_ADMIN = { tenantId: 'default', loginId: 'admin', password: 'admin' }
 
 export const test = base.extend({
