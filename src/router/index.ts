@@ -9,6 +9,14 @@ const routes: RouteRecordRaw[] = [
     meta: { public: true },
   },
   {
+    path: '/change-password',
+    name: 'change-password',
+    component: () => import('@/views/ChangePasswordView.vue'),
+    // Authenticated but standalone (no AppLayout): the user is gated here until
+    // they rotate a bootstrap/temporary password. Not public — requires a token.
+    meta: { forcedChange: true },
+  },
+  {
     path: '/',
     component: () => import('@/layout/AppLayout.vue'),
     redirect: { name: 'dashboard' },
@@ -87,6 +95,16 @@ router.beforeEach((to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.name === 'login' && auth.isAuthenticated) {
+    return auth.mustChangePassword ? { name: 'change-password' } : { name: 'dashboard' }
+  }
+  // Force a pending password rotation before anything else: an authenticated
+  // user whose flag is set is pinned to the change-password screen and cannot
+  // reach any other authenticated route until they clear it.
+  if (auth.isAuthenticated && auth.mustChangePassword && to.name !== 'change-password') {
+    return { name: 'change-password' }
+  }
+  // Conversely, don't let a user who doesn't need it sit on that screen.
+  if (to.name === 'change-password' && auth.isAuthenticated && !auth.mustChangePassword) {
     return { name: 'dashboard' }
   }
 })
