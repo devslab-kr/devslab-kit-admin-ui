@@ -20,6 +20,15 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
+    // The kit's admin API returns RFC 7807 ProblemDetail (application/problem+json):
+    // the human-readable message lives in `detail` (falling back to `title`). Older
+    // builds put it in `message`. Normalize all of these onto `data.message` so every
+    // view can keep reading `error.response.data.message` regardless of the shape.
+    const data = error?.response?.data
+    if (data && typeof data === 'object' && data.message == null) {
+      data.message = data.detail ?? data.title ?? undefined
+    }
+
     // A 401 on an /auth/ endpoint is an expected, in-form outcome — bad login
     // credentials, or a wrong *current* password on the change-password screen.
     // The calling view shows the error inline; auto-logging-out here would yank
