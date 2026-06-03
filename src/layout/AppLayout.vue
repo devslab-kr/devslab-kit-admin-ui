@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter, useRoute, RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useMediaQuery } from '@vueuse/core'
 import Menu from 'primevue/menu'
 import Button from 'primevue/button'
 import { useAuthStore } from '@/stores/auth'
@@ -23,6 +24,15 @@ watch(
     sidebarOpen.value = false
   },
 )
+
+// Once the viewport reaches desktop the sidebar is always shown (lg:static), so
+// the drawer flag is meaningless there. Reset it on the way up so a stale "open"
+// can't carry back down to mobile and leave the sidebar stuck visible after a
+// resize round-trip.
+const isDesktop = useMediaQuery('(min-width: 1024px)')
+watch(isDesktop, (desktop) => {
+  if (desktop) sidebarOpen.value = false
+})
 
 // Account dropdown anchored on the header username. PrimeVue's Menu in popup
 // mode exposes toggle(event); type just that surface to avoid depending on an
@@ -122,16 +132,17 @@ function toggleLocale() {
     <div class="flex-1 flex flex-col min-w-0">
       <header class="h-14 border-b border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 flex items-center justify-between px-4">
         <div class="flex items-center gap-2 min-w-0">
-          <Button
-            class="lg:hidden"
-            text
-            rounded
-            severity="secondary"
-            icon="pi pi-bars"
-            v-tooltip.top="t('app.openMenu')"
-            :aria-label="t('app.openMenu')"
-            @click="sidebarOpen = true"
-          />
+          <div class="lg:hidden">
+            <Button
+              text
+              rounded
+              severity="secondary"
+              icon="pi pi-bars"
+              v-tooltip.top="t('app.openMenu')"
+              :aria-label="t('app.openMenu')"
+              @click="sidebarOpen = true"
+            />
+          </div>
           <div class="text-sm text-surface-600 dark:text-surface-400 truncate">
             {{ (route.meta.title as string | undefined) ?? route.name }}
           </div>
