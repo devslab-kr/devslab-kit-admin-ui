@@ -64,7 +64,7 @@ onMounted(refresh)
         severity="secondary"
         outlined
         :loading="loading"
-        :aria-label="t('dashboard.refresh')"
+        v-tooltip.top="t('dashboard.refresh')" :aria-label="t('dashboard.refresh')"
         @click="refresh"
       />
     </div>

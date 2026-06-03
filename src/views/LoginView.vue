@@ -7,6 +7,7 @@ import Card from 'primevue/card'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
+import Message from 'primevue/message'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
 
@@ -15,6 +16,9 @@ const router = useRouter()
 const route = useRoute()
 const toast = useToast()
 const { t } = useI18n()
+
+// Set by the router guard / axios interceptor when an expired session was bounced here.
+const sessionExpired = route.query.expired === '1'
 
 const tenantId = ref('default')
 const loginId = ref('')
@@ -61,6 +65,9 @@ async function submit() {
         </div>
       </template>
       <template #content>
+        <Message v-if="sessionExpired" severity="warn" :closable="false" class="mb-4">
+          {{ t('login.sessionExpired') }}
+        </Message>
         <form class="flex flex-col gap-4" @submit.prevent="submit">
           <div class="flex flex-col gap-1">
             <label for="tenantId" class="text-sm font-medium">{{ t('login.tenant') }}</label>

@@ -130,7 +130,7 @@ onMounted(reload)
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">{{ t('tenants.title') }}</h1>
       <div class="flex items-center gap-2">
-        <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
+        <Button icon="pi pi-refresh" severity="secondary" outlined v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')" @click="reload" />
         <Button icon="pi pi-plus" :label="t('common.create')" @click="openCreate" />
       </div>
     </div>
@@ -157,14 +157,14 @@ onMounted(reload)
       </Column>
       <Column header="" style="width: 12rem; text-align: right">
         <template #body="{ data }">
-          <Button icon="pi pi-pencil" text rounded :aria-label="t('common.ariaRename')" @click="openRename(data)" />
-          <Button icon="pi pi-power-off" text rounded :aria-label="t('tenants.columns.status')" @click="openStatus(data)" />
+          <Button icon="pi pi-pencil" text rounded v-tooltip.top="t('common.ariaRename')" :aria-label="t('common.ariaRename')" @click="openRename(data)" />
+          <Button icon="pi pi-power-off" text rounded v-tooltip.top="t('tenants.columns.status')" :aria-label="t('tenants.columns.status')" @click="openStatus(data)" />
           <Button
             icon="pi pi-trash"
             text
             rounded
             severity="danger"
-            :aria-label="t('common.ariaDelete')"
+            v-tooltip.top="t('common.ariaDelete')" :aria-label="t('common.ariaDelete')"
             @click="confirmDelete(data)"
           />
         </template>

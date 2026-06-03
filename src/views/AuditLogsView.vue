@@ -106,7 +106,7 @@ onMounted(reload)
         <h1 class="text-2xl font-semibold">{{ t('auditLogs.title') }}</h1>
         <span class="text-sm text-surface-500">{{ totalRecords.toLocaleString() }}</span>
       </div>
-      <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
+      <Button icon="pi pi-refresh" severity="secondary" outlined v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')" @click="reload" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-6 gap-3 p-3 rounded-md border border-surface-200 dark:border-surface-700">
@@ -168,7 +168,7 @@ onMounted(reload)
       <Column field="ip" :header="t('auditLogs.columns.ip')" />
       <Column header="" style="width: 5rem">
         <template #body="{ data }">
-          <Button icon="pi pi-eye" text rounded :aria-label="t('auditLogs.ariaInspect')" @click="openDetail(data)" />
+          <Button icon="pi pi-eye" text rounded v-tooltip.top="t('auditLogs.ariaInspect')" :aria-label="t('auditLogs.ariaInspect')" @click="openDetail(data)" />
         </template>
       </Column>
     </DataTable>

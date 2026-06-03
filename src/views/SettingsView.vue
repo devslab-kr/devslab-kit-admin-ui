@@ -51,7 +51,7 @@ onMounted(reload)
         severity="secondary"
         outlined
         :loading="loading"
-        :aria-label="t('common.ariaRefresh')"
+        v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')"
         @click="reload"
       />
     </div>

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
+import EmptyState from '@/components/EmptyState.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -172,14 +173,14 @@ onMounted(() => {
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">{{ t('menus.title') }}</h1>
       <div class="flex items-center gap-2">
-        <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
+        <Button icon="pi pi-refresh" severity="secondary" outlined v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')" @click="reload" />
         <Button icon="pi pi-plus" :label="t('menus.addRoot')" @click="openCreate(null)" />
       </div>
     </div>
 
     <TreeTable :value="nodes" :loading="loading" data-key="key" :indent-size="24">
       <template #empty>
-        <div class="py-6 text-center text-surface-500">{{ t('common.noResults') }}</div>
+        <EmptyState :message="t('common.noResults')" />
       </template>
       <Column field="label" :header="t('menus.columns.label')" expander style="min-width: 16rem">
         <template #body="{ node }">
@@ -203,14 +204,14 @@ onMounted(() => {
       <Column field="displayOrder" :header="t('menus.columns.order')" style="width: 6rem" />
       <Column header="" style="width: 12rem; text-align: right">
         <template #body="{ node }">
-          <Button icon="pi pi-plus" text rounded :aria-label="t('menus.ariaAddChild')" @click="openCreate(node.data.id)" />
-          <Button icon="pi pi-pencil" text rounded :aria-label="t('common.ariaEdit')" @click="openEdit(node.data)" />
+          <Button icon="pi pi-plus" text rounded v-tooltip.top="t('menus.ariaAddChild')" :aria-label="t('menus.ariaAddChild')" @click="openCreate(node.data.id)" />
+          <Button icon="pi pi-pencil" text rounded v-tooltip.top="t('common.ariaEdit')" :aria-label="t('common.ariaEdit')" @click="openEdit(node.data)" />
           <Button
             icon="pi pi-trash"
             text
             rounded
             severity="danger"
-            :aria-label="t('common.ariaDelete')"
+            v-tooltip.top="t('common.ariaDelete')" :aria-label="t('common.ariaDelete')"
             @click="confirmDelete(node.data)"
           />
         </template>

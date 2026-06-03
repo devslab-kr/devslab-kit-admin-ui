@@ -118,7 +118,7 @@ onMounted(reload)
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">{{ t('policies.title') }}</h1>
-      <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
+      <Button icon="pi pi-refresh" severity="secondary" outlined v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')" @click="reload" />
     </div>
 
     <Message severity="info" :closable="false">
@@ -141,7 +141,7 @@ onMounted(reload)
       </Column>
       <Column header="" style="width: 8rem; text-align: right">
         <template #body="{ data }">
-          <Button icon="pi pi-play" text rounded :aria-label="t('policies.ariaTest')" @click="openTest(data)" />
+          <Button icon="pi pi-play" text rounded v-tooltip.top="t('policies.ariaTest')" :aria-label="t('policies.ariaTest')" @click="openTest(data)" />
         </template>
       </Column>
     </DataTable>
