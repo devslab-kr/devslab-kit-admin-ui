@@ -51,6 +51,7 @@ const navGroups = computed(() => [
       { label: t('nav.tenants'), icon: 'pi pi-building', route: 'tenants' },
       { label: t('nav.policies'), icon: 'pi pi-shield', route: 'policies' },
       { label: t('nav.settings'), icon: 'pi pi-cog', route: 'settings' },
+      { label: t('nav.configSync'), icon: 'pi pi-sync', route: 'config-sync' },
     ],
   },
   {

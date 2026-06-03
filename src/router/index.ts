@@ -77,6 +77,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/SettingsView.vue'),
       },
       {
+        path: 'config-sync',
+        name: 'config-sync',
+        component: () => import('@/views/ConfigSyncView.vue'),
+      },
+      {
         // Voluntary self-service password change, inside the layout. The same
         // ChangePasswordView also serves the forced standalone route above; it
         // switches chrome based on auth.mustChangePassword.
