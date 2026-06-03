@@ -4,6 +4,10 @@
 
 [devslab-kr/devslab-kit](https://github.com/devslab-kr/devslab-kit) 의 Vue 3 admin console — 플랫폼 스타터가 노출하는 모든 기능을 관리하고 모니터링한다.
 
+> 📖 **전체 사용 가이드 — 모든 화면 step-by-step:**
+> **[devslab-kit.devslab.kr/ko/guides/admin-console](https://devslab-kit.devslab.kr/ko/guides/admin-console/)**
+> (렌더링된 검색 가능 문서 사이트, 한/영 — devslab-kit 문서 사이트의 일부).
+
 ## 다루는 범위
 
 단순 CRUD 폼이 아니라 `devslab-kit` 이 제공하는 **모든 기능**을 다루는 **full admin console**:
