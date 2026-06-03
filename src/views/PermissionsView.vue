@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import EmptyState from '@/components/EmptyState.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -138,7 +139,7 @@ onMounted(reload)
       <h1 class="text-xl font-semibold">{{ t('permissions.title') }}</h1>
       <div class="flex items-center gap-2">
         <InputText v-model="search" :placeholder="t('common.search')" class="w-56" />
-        <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
+        <Button icon="pi pi-refresh" severity="secondary" outlined v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')" @click="reload" />
         <Button icon="pi pi-plus" :label="t('common.create')" @click="openCreate" />
       </div>
     </div>
@@ -152,19 +153,19 @@ onMounted(reload)
       data-key="id"
     >
       <template #empty>
-        <div class="py-6 text-center text-surface-500">{{ t('common.noResults') }}</div>
+        <EmptyState :message="t('common.noResults')" />
       </template>
       <Column field="code" :header="t('common.code')" sortable />
       <Column field="description" :header="t('common.description')" />
       <Column header="" style="width: 10rem; text-align: right">
         <template #body="{ data }">
-          <Button icon="pi pi-pencil" text rounded :aria-label="t('common.ariaEdit')" @click="openEdit(data)" />
+          <Button icon="pi pi-pencil" text rounded v-tooltip.top="t('common.ariaEdit')" :aria-label="t('common.ariaEdit')" @click="openEdit(data)" />
           <Button
             icon="pi pi-trash"
             text
             rounded
             severity="danger"
-            :aria-label="t('common.ariaDelete')"
+            v-tooltip.top="t('common.ariaDelete')" :aria-label="t('common.ariaDelete')"
             @click="confirmDelete(data)"
           />
         </template>

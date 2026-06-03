@@ -4,6 +4,7 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
+import Tooltip from 'primevue/tooltip'
 
 import './style.css'
 
@@ -29,6 +30,7 @@ app.use(PrimeVue, {
 })
 app.use(ToastService)
 app.use(ConfirmationService)
+app.directive('tooltip', Tooltip)
 
 // Apply the persisted theme before mount so the first paint matches.
 useUiStore().applyTheme()

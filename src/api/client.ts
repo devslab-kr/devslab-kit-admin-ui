@@ -36,10 +36,18 @@ client.interceptors.response.use(
     // the global handler for those and let the caller deal with it.
     const url = error?.config?.url ?? ''
     const isAuthEndpoint = typeof url === 'string' && url.includes('/auth/')
-    if (error?.response?.status === 401 && !isAuthEndpoint) {
+    const status = error?.response?.status
+    if (!isAuthEndpoint && (status === 401 || status === 403)) {
       const auth = useAuthStore()
-      auth.clear()
-      router.replace({ name: 'login' })
+      // 401 = unauthenticated. 403 with an expired token = the kit rejects a stale
+      // session as "forbidden" (the expired JWT falls back to anonymous). Either way
+      // the session is dead → sign out and bounce to login with an "expired" hint.
+      // A genuine 403 (valid token, missing permission) is left alone so the calling
+      // view can surface a "no permission" message instead of logging the user out.
+      if (status === 401 || auth.isExpired()) {
+        auth.clear()
+        router.replace({ name: 'login', query: { expired: '1' } })
+      }
     }
     return Promise.reject(error)
   },

@@ -102,6 +102,7 @@ export default {
     password: 'Password',
     submit: 'Sign in',
     failed: 'Login failed',
+    sessionExpired: 'Your session expired. Please sign in again.',
   },
   changePassword: {
     title: 'Change your password',

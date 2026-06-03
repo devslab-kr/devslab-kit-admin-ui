@@ -104,8 +104,15 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore()
+  // Treat an expired JWT as logged-out: drop it so the user is bounced to login
+  // (with an "expired" hint) instead of making doomed API calls from a dead session.
+  const expired = auth.token !== null && auth.isExpired()
+  if (expired) auth.clear()
   if (!to.meta.public && !auth.isAuthenticated) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    return {
+      name: 'login',
+      query: { ...(expired ? { expired: '1' } : {}), redirect: to.fullPath },
+    }
   }
   if (to.name === 'login' && auth.isAuthenticated) {
     return auth.mustChangePassword ? { name: 'change-password' } : { name: 'dashboard' }

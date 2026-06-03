@@ -108,7 +108,7 @@ function toggleLocale() {
             text
             rounded
             severity="secondary"
-            :aria-label="t('app.toggleLocale')"
+            v-tooltip.top="t('app.toggleLocale')" :aria-label="t('app.toggleLocale')"
             data-testid="locale-toggle"
             @click="toggleLocale"
           >
@@ -119,7 +119,7 @@ function toggleLocale() {
             rounded
             :icon="ui.theme === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
             severity="secondary"
-            :aria-label="t('app.toggleTheme')"
+            v-tooltip.top="t('app.toggleTheme')" :aria-label="t('app.toggleTheme')"
             @click="ui.toggleTheme()"
           />
           <Button

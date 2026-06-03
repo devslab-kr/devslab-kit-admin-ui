@@ -102,6 +102,7 @@ export default {
     password: '비밀번호',
     submit: '로그인',
     failed: '로그인 실패',
+    sessionExpired: '세션이 만료되었습니다. 다시 로그인해 주세요.',
   },
   changePassword: {
     title: '비밀번호 변경',
