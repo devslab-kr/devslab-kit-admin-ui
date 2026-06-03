@@ -20,3 +20,52 @@ body {
 .dark body {
   background-color: var(--p-surface-950);
 }
+
+/* ---- Global UX polish (applies app-wide) ---- */
+
+/* Smooth, consistent micro-interactions. */
+.p-button,
+.p-tag,
+.p-inputtext,
+.p-card {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+}
+
+/* Clearer row-hover affordance on data tables. */
+.p-datatable-tbody > tr {
+  transition: background-color 0.12s ease;
+}
+
+/* Keyboard focus is always visible (a11y). */
+:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Slimmer, subtler scrollbars — the sidebar and long tables get scrolly. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--p-surface-300) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--p-surface-300);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dark * {
+  scrollbar-color: var(--p-surface-700) transparent;
+}
+.dark *::-webkit-scrollbar-thumb {
+  background: var(--p-surface-700);
+}
