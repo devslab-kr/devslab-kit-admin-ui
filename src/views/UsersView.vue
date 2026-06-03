@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -22,6 +22,12 @@ const { t } = useI18n()
 const tenantId = ref(auth.user?.tenantId ?? 'default')
 const rows = ref<UserAccount[]>([])
 const loading = ref(false)
+const search = ref('')
+const filtered = computed(() =>
+  rows.value.filter((u) =>
+    `${u.loginId} ${u.email ?? ''} ${u.status}`.toLowerCase().includes(search.value.toLowerCase()),
+  ),
+)
 
 const createOpen = ref(false)
 const passwordDialogOpen = ref(false)
@@ -150,14 +156,14 @@ onMounted(reload)
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">{{ t('users.title') }}</h1>
       <div class="flex items-center gap-2">
-        <InputText v-model="tenantId" :placeholder="t('common.tenantId')" class="w-48" />
+        <InputText v-model="search" :placeholder="t('common.search')" class="w-56" />
         <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
         <Button icon="pi pi-plus" :label="t('common.create')" @click="openCreate" />
       </div>
     </div>
 
     <DataTable
-      :value="rows"
+      :value="filtered"
       :loading="loading"
       striped-rows
       paginator
@@ -165,6 +171,9 @@ onMounted(reload)
       :rows-per-page-options="[10, 25, 50]"
       data-key="id.value"
     >
+      <template #empty>
+        <div class="py-6 text-center text-surface-500">{{ t('common.noResults') }}</div>
+      </template>
       <Column field="loginId" :header="t('users.columns.loginId')" sortable />
       <Column field="email" :header="t('users.columns.email')" />
       <Column :header="t('users.columns.status')" sortable>

@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
+import Select from 'primevue/select'
 import Tag from 'primevue/tag'
+import Tree from 'primevue/tree'
+import type { TreeNode } from 'primevue/treenode'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import {
@@ -14,34 +17,38 @@ import {
   type PermissionCheckResponse,
   type MenuVisibilityResponse,
 } from '@/api/diagnostics'
+import { usersApi, type UserAccount } from '@/api/users'
+import { permissionsApi, type Permission } from '@/api/permissions'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 const toast = useToast()
 const { t } = useI18n()
 
-const loginForm = ref({
-  tenantId: auth.user?.tenantId ?? 'default',
-  loginId: '',
-  rawPassword: '',
-})
+const tenantId = auth.user?.tenantId ?? 'default'
+
+// Pickers — so you choose a user by login id / a permission by code instead of
+// hand-typing UUIDs and permission codes.
+const users = ref<UserAccount[]>([])
+const permissions = ref<Permission[]>([])
+
+const userOptions = computed(() => users.value.map((u) => ({ label: u.loginId, value: u.id.value })))
+const permissionOptions = computed(() => permissions.value.map((p) => ({ label: p.code, value: p.code })))
+
+async function loadPickers() {
+  try {
+    const [u, p] = await Promise.all([usersApi.list(tenantId), permissionsApi.list()])
+    users.value = u
+    permissions.value = p
+  } catch {
+    // Pickers are a convenience; failing to load them shouldn't break the page.
+  }
+}
+
+// --- Login test (type credentials on purpose) ---
+const loginForm = ref({ tenantId, loginId: '', rawPassword: '' })
 const loginResult = ref<LoginTestResponse | null>(null)
 const loginRunning = ref(false)
-
-const permForm = ref({
-  userId: auth.user?.id ?? '',
-  tenantId: auth.user?.tenantId ?? 'default',
-  permissionCode: '',
-})
-const permResult = ref<PermissionCheckResponse | null>(null)
-const permRunning = ref(false)
-
-const menuForm = ref({
-  userId: auth.user?.id ?? '',
-  tenantId: auth.user?.tenantId ?? 'default',
-})
-const menuResult = ref<MenuVisibilityResponse | null>(null)
-const menuRunning = ref(false)
 
 async function runLoginTest() {
   loginRunning.value = true
@@ -55,6 +62,11 @@ async function runLoginTest() {
   }
 }
 
+// --- Permission check (pick user + permission) ---
+const permForm = ref({ userId: auth.user?.id ?? '', permissionCode: '' })
+const permResult = ref<PermissionCheckResponse | null>(null)
+const permRunning = ref(false)
+
 async function runPermCheck() {
   permRunning.value = true
   permResult.value = null
@@ -62,7 +74,6 @@ async function runPermCheck() {
     permResult.value = await diagnosticsApi.permissionCheck({
       userId: permForm.value.userId,
       permissionCode: permForm.value.permissionCode,
-      tenantId: permForm.value.tenantId || undefined,
     })
   } catch (e) {
     toast.add({ severity: 'error', summary: t('diagnostics.permCheck.failed'), detail: msg(e), life: 4000 })
@@ -71,11 +82,26 @@ async function runPermCheck() {
   }
 }
 
+// --- Menu visibility (pick user, render as a tree) ---
+const menuForm = ref({ userId: auth.user?.id ?? '' })
+const menuResult = ref<MenuVisibilityResponse | null>(null)
+const menuRunning = ref(false)
+
+const menuTree = computed<TreeNode[]>(() => toNodes(menuResult.value?.items ?? []))
+function toNodes(items: MenuVisibilityResponse['items']): TreeNode[] {
+  return items.map((it) => ({
+    key: it.id,
+    label: it.label,
+    data: it,
+    children: it.children?.length ? toNodes(it.children) : undefined,
+  }))
+}
+
 async function runMenuVisibility() {
   menuRunning.value = true
   menuResult.value = null
   try {
-    menuResult.value = await diagnosticsApi.menuVisibility(menuForm.value.userId, menuForm.value.tenantId)
+    menuResult.value = await diagnosticsApi.menuVisibility(menuForm.value.userId)
   } catch (e) {
     toast.add({ severity: 'error', summary: t('diagnostics.menuVis.failed'), detail: msg(e), life: 4000 })
   } finally {
@@ -90,11 +116,13 @@ function msg(e: unknown): string {
   }
   return String(e)
 }
+
+onMounted(loadPickers)
 </script>
 
 <template>
   <div class="flex flex-col gap-4">
-    <h1 class="text-xl font-semibold">{{ t('diagnostics.title') }}</h1>
+    <h1 class="text-2xl font-semibold">{{ t('diagnostics.title') }}</h1>
 
     <Message severity="info" :closable="false">
       {{ t('diagnostics.intro') }}
@@ -129,10 +157,33 @@ function msg(e: unknown): string {
         <template #title>{{ t('diagnostics.permCheck.title') }}</template>
         <template #content>
           <div class="flex flex-col gap-3">
-            <InputText v-model="permForm.userId" :placeholder="t('diagnostics.permCheck.userIdPlaceholder')" />
-            <InputText v-model="permForm.tenantId" :placeholder="t('diagnostics.permCheck.tenantIdPlaceholder')" />
-            <InputText v-model="permForm.permissionCode" :placeholder="t('diagnostics.permCheck.permissionPlaceholder')" />
-            <Button :label="t('diagnostics.permCheck.run')" icon="pi pi-play" :loading="permRunning" @click="runPermCheck" />
+            <Select
+              v-model="permForm.userId"
+              :options="userOptions"
+              option-label="label"
+              option-value="value"
+              filter
+              show-clear
+              class="w-full"
+              :placeholder="t('diagnostics.permCheck.userSelect')"
+            />
+            <Select
+              v-model="permForm.permissionCode"
+              :options="permissionOptions"
+              option-label="label"
+              option-value="value"
+              filter
+              show-clear
+              class="w-full"
+              :placeholder="t('diagnostics.permCheck.permissionSelect')"
+            />
+            <Button
+              :label="t('diagnostics.permCheck.run')"
+              icon="pi pi-play"
+              :loading="permRunning"
+              :disabled="!permForm.userId || !permForm.permissionCode"
+              @click="runPermCheck"
+            />
             <div v-if="permResult" class="mt-2 p-3 rounded border border-surface-200 dark:border-surface-700 text-sm">
               <div class="flex items-center gap-2 mb-2">
                 <strong>{{ t('diagnostics.permCheck.hasPermission') }}:</strong>
@@ -157,15 +208,51 @@ function msg(e: unknown): string {
         <template #title>{{ t('diagnostics.menuVis.title') }}</template>
         <template #content>
           <div class="flex flex-col gap-3">
-            <div class="grid grid-cols-2 gap-3">
-              <InputText v-model="menuForm.userId" :placeholder="t('diagnostics.menuVis.userIdPlaceholder')" />
-              <InputText v-model="menuForm.tenantId" :placeholder="t('diagnostics.menuVis.tenantIdPlaceholder')" />
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+              <Select
+                v-model="menuForm.userId"
+                :options="userOptions"
+                option-label="label"
+                option-value="value"
+                filter
+                show-clear
+                class="w-full sm:w-80"
+                :placeholder="t('diagnostics.menuVis.userSelect')"
+              />
+              <Button
+                :label="t('diagnostics.menuVis.run')"
+                icon="pi pi-play"
+                :loading="menuRunning"
+                :disabled="!menuForm.userId"
+                @click="runMenuVisibility"
+              />
             </div>
-            <Button :label="t('diagnostics.menuVis.run')" icon="pi pi-play" :loading="menuRunning" @click="runMenuVisibility" />
-            <pre
-              v-if="menuResult"
-              class="mt-2 p-3 rounded bg-surface-100 dark:bg-surface-800 overflow-auto text-xs max-h-96"
-            >{{ JSON.stringify(menuResult, null, 2) }}</pre>
+
+            <div
+              v-if="menuResult && menuTree.length === 0"
+              class="text-sm text-surface-500 p-3 rounded border border-surface-200 dark:border-surface-700"
+            >
+              {{ t('diagnostics.menuVis.empty') }}
+            </div>
+            <Tree
+              v-else-if="menuResult"
+              :value="menuTree"
+              class="mt-1 border border-surface-200 dark:border-surface-700 rounded-md"
+            >
+              <template #default="{ node }">
+                <span class="inline-flex items-center gap-2">
+                  <Tag
+                    :value="node.data.visible ? t('diagnostics.menuVis.visible') : t('diagnostics.menuVis.hidden')"
+                    :severity="node.data.visible ? 'success' : 'secondary'"
+                    style="min-width: 3.5rem; justify-content: center"
+                  />
+                  <span :class="node.data.visible ? '' : 'text-surface-400 line-through'">{{ node.label }}</span>
+                  <code v-if="node.data.requiredPermission" class="text-xs text-surface-400">
+                    {{ node.data.requiredPermission }}
+                  </code>
+                </span>
+              </template>
+            </Tree>
           </div>
         </template>
       </Card>

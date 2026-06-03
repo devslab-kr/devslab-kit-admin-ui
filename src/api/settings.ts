@@ -13,8 +13,10 @@ export interface AdminSettings {
     enabled: boolean
     asyncQueueCapacity: number
   }
-  menu: {
-    cacheTtlSeconds: number
+  cache: {
+    type: string
+    ttlSeconds: number
+    keyPrefix: string
   }
   identity: {
     lockoutThreshold: number

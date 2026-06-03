@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import AutoComplete from 'primevue/autocomplete'
+import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -17,11 +19,40 @@ const { t } = useI18n()
 
 const rows = ref<Permission[]>([])
 const loading = ref(false)
+const search = ref('')
+const filtered = computed(() =>
+  rows.value.filter((p) =>
+    `${p.code} ${p.description ?? ''}`.toLowerCase().includes(search.value.toLowerCase()),
+  ),
+)
 const createOpen = ref(false)
 const editOpen = ref(false)
-const newPermission = ref({ code: '', description: '' })
 const editTarget = ref<Permission | null>(null)
 const editDescription = ref('')
+
+// Create form: compose the code from a resource (autocompleted from the
+// namespaces of existing permissions) + an action, so you pick/compose instead
+// of hand-typing the whole string. Free entry is still allowed in both fields.
+const builder = ref<{ resource: string; action: string }>({ resource: '', action: '' })
+const newDescription = ref('')
+const actionOptions = ['read', 'write', 'delete', 'manage', 'create', 'update', 'list']
+const resourceSuggestions = ref<string[]>([])
+
+const composedCode = computed(() => {
+  const resource = (builder.value.resource ?? '').trim().replace(/\.+$/, '')
+  const action = (builder.value.action ?? '').trim()
+  return resource && action ? `${resource}.${action}` : ''
+})
+
+function onResourceComplete(event: { query: string }) {
+  const namespaces = new Set<string>()
+  for (const p of rows.value) {
+    const dot = p.code.lastIndexOf('.')
+    if (dot > 0) namespaces.add(p.code.slice(0, dot))
+  }
+  const q = event.query.toLowerCase()
+  resourceSuggestions.value = [...namespaces].filter((n) => n.toLowerCase().includes(q)).sort()
+}
 
 async function reload() {
   loading.value = true
@@ -35,15 +66,16 @@ async function reload() {
 }
 
 function openCreate() {
-  newPermission.value = { code: '', description: '' }
+  builder.value = { resource: '', action: '' }
+  newDescription.value = ''
   createOpen.value = true
 }
 
 async function submitCreate() {
   try {
     await permissionsApi.create({
-      code: newPermission.value.code,
-      description: newPermission.value.description || undefined,
+      code: composedCode.value,
+      description: newDescription.value || undefined,
     })
     toast.add({ severity: 'success', summary: t('permissions.toasts.created'), life: 2500 })
     createOpen.value = false
@@ -105,19 +137,23 @@ onMounted(reload)
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">{{ t('permissions.title') }}</h1>
       <div class="flex items-center gap-2">
+        <InputText v-model="search" :placeholder="t('common.search')" class="w-56" />
         <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
         <Button icon="pi pi-plus" :label="t('common.create')" @click="openCreate" />
       </div>
     </div>
 
     <DataTable
-      :value="rows"
+      :value="filtered"
       :loading="loading"
       striped-rows
       paginator
       :rows="15"
       data-key="id"
     >
+      <template #empty>
+        <div class="py-6 text-center text-surface-500">{{ t('common.noResults') }}</div>
+      </template>
       <Column field="code" :header="t('common.code')" sortable />
       <Column field="description" :header="t('common.description')" />
       <Column header="" style="width: 10rem; text-align: right">
@@ -135,11 +171,34 @@ onMounted(reload)
       </Column>
     </DataTable>
 
-    <Dialog v-model:visible="createOpen" :header="t('permissions.createDialog.title')" modal :style="{ width: '28rem' }">
+    <Dialog v-model:visible="createOpen" :header="t('permissions.createDialog.title')" modal :style="{ width: '32rem' }">
       <div class="flex flex-col gap-3 pt-2">
-        <InputText v-model="newPermission.code" :placeholder="t('permissions.createDialog.codePlaceholder')" />
+        <div class="flex items-start gap-2">
+          <AutoComplete
+            v-model="builder.resource"
+            :suggestions="resourceSuggestions"
+            dropdown
+            complete-on-focus
+            fluid
+            class="flex-1"
+            :placeholder="t('permissions.createDialog.resourcePlaceholder')"
+            @complete="onResourceComplete"
+          />
+          <span class="pt-2 font-semibold text-surface-400">.</span>
+          <Select
+            v-model="builder.action"
+            :options="actionOptions"
+            editable
+            class="w-44"
+            :placeholder="t('permissions.createDialog.actionPlaceholder')"
+          />
+        </div>
+        <div class="text-sm text-surface-500">
+          {{ t('permissions.createDialog.preview') }}:
+          <code class="text-primary">{{ composedCode || '—' }}</code>
+        </div>
         <Textarea
-          v-model="newPermission.description"
+          v-model="newDescription"
           :placeholder="t('permissions.createDialog.descriptionPlaceholder')"
           rows="3"
           auto-resize
@@ -147,7 +206,7 @@ onMounted(reload)
       </div>
       <template #footer>
         <Button :label="t('common.cancel')" text @click="createOpen = false" />
-        <Button :label="t('common.create')" icon="pi pi-check" @click="submitCreate" />
+        <Button :label="t('common.create')" icon="pi pi-check" :disabled="!composedCode" @click="submitCreate" />
       </template>
     </Dialog>
 

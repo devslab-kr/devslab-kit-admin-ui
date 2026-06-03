@@ -7,9 +7,11 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { menusApi, type MenuItem } from '@/api/menus'
+import { permissionsApi } from '@/api/permissions'
 import { useAuthStore } from '@/stores/auth'
 
 interface TreeNode {
@@ -27,6 +29,16 @@ const tenantId = ref(auth.user?.tenantId ?? 'default')
 const nodes = ref<TreeNode[]>([])
 const loading = ref(false)
 
+// Permission codes for the "required permission" picker (no more hand-typing).
+const permissionCodes = ref<string[]>([])
+async function loadPermissions() {
+  try {
+    permissionCodes.value = (await permissionsApi.list()).map((p) => p.code).sort()
+  } catch {
+    // non-fatal: the picker just shows no options
+  }
+}
+
 const createOpen = ref(false)
 const editOpen = ref(false)
 const createParentId = ref<string | null>(null)
@@ -35,7 +47,7 @@ const newMenu = ref({
   label: '',
   path: '',
   icon: '',
-  requiredPermission: '',
+  requiredPermission: '' as string | null,
   displayOrder: 0,
 })
 const editTarget = ref<MenuItem | null>(null)
@@ -43,7 +55,7 @@ const editForm = ref({
   label: '',
   path: '',
   icon: '',
-  requiredPermission: '',
+  requiredPermission: '' as string | null,
   displayOrder: 0,
 })
 
@@ -149,7 +161,10 @@ function msg(e: unknown): string {
   return String(e)
 }
 
-onMounted(reload)
+onMounted(() => {
+  reload()
+  loadPermissions()
+})
 </script>
 
 <template>
@@ -157,13 +172,15 @@ onMounted(reload)
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold">{{ t('menus.title') }}</h1>
       <div class="flex items-center gap-2">
-        <InputText v-model="tenantId" :placeholder="t('common.tenantId')" class="w-48" />
         <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
         <Button icon="pi pi-plus" :label="t('menus.addRoot')" @click="openCreate(null)" />
       </div>
     </div>
 
     <TreeTable :value="nodes" :loading="loading" data-key="key" :indent-size="24">
+      <template #empty>
+        <div class="py-6 text-center text-surface-500">{{ t('common.noResults') }}</div>
+      </template>
       <Column field="label" :header="t('menus.columns.label')" expander style="min-width: 16rem">
         <template #body="{ node }">
           <span class="flex items-center gap-2">
@@ -206,7 +223,14 @@ onMounted(reload)
         <InputText v-model="newMenu.label" :placeholder="t('menus.createDialog.labelPlaceholder')" />
         <InputText v-model="newMenu.path" :placeholder="t('menus.createDialog.pathPlaceholder')" />
         <InputText v-model="newMenu.icon" :placeholder="t('menus.createDialog.iconPlaceholder')" />
-        <InputText v-model="newMenu.requiredPermission" :placeholder="t('menus.createDialog.permissionPlaceholder')" />
+        <Select
+          v-model="newMenu.requiredPermission"
+          :options="permissionCodes"
+          filter
+          show-clear
+          fluid
+          :placeholder="t('menus.createDialog.permissionPlaceholder')"
+        />
         <InputNumber v-model="newMenu.displayOrder" :placeholder="t('menus.createDialog.orderPlaceholder')" :min="0" fluid />
       </div>
       <template #footer>
@@ -223,7 +247,14 @@ onMounted(reload)
         <InputText v-model="editForm.label" :placeholder="t('menus.createDialog.labelPlaceholder')" />
         <InputText v-model="editForm.path" :placeholder="t('menus.createDialog.pathPlaceholder')" />
         <InputText v-model="editForm.icon" :placeholder="t('menus.createDialog.iconPlaceholder')" />
-        <InputText v-model="editForm.requiredPermission" :placeholder="t('menus.createDialog.permissionPlaceholder')" />
+        <Select
+          v-model="editForm.requiredPermission"
+          :options="permissionCodes"
+          filter
+          show-clear
+          fluid
+          :placeholder="t('menus.createDialog.permissionPlaceholder')"
+        />
         <InputNumber v-model="editForm.displayOrder" :placeholder="t('menus.createDialog.orderPlaceholder')" :min="0" fluid />
       </div>
       <template #footer>

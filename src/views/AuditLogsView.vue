@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import DataTable, { type DataTablePageEvent } from 'primevue/datatable'
+import DataTable, { type DataTablePageEvent, type DataTableRowClickEvent } from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -84,6 +84,10 @@ function openDetail(row: AuditLog) {
   detailOpen.value = true
 }
 
+function onRowClick(event: DataTableRowClickEvent) {
+  openDetail(event.data as AuditLog)
+}
+
 function msg(e: unknown): string {
   if (e && typeof e === 'object' && 'response' in e) {
     const r = (e as { response?: { data?: { message?: string } } }).response
@@ -98,12 +102,14 @@ onMounted(reload)
 <template>
   <div class="flex flex-col gap-4">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('auditLogs.title') }}</h1>
+      <div class="flex items-baseline gap-3">
+        <h1 class="text-2xl font-semibold">{{ t('auditLogs.title') }}</h1>
+        <span class="text-sm text-surface-500">{{ totalRecords.toLocaleString() }}</span>
+      </div>
       <Button icon="pi pi-refresh" severity="secondary" outlined :aria-label="t('common.ariaRefresh')" @click="reload" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-6 gap-3 p-3 rounded-md border border-surface-200 dark:border-surface-700">
-      <InputText v-model="filter.tenantId" :placeholder="t('common.tenantId')" />
       <InputText v-model="filter.actorLogin" :placeholder="t('auditLogs.filters.actorLogin')" />
       <InputText v-model="filter.action" :placeholder="t('auditLogs.filters.action')" />
       <InputText v-model="filter.targetType" :placeholder="t('auditLogs.filters.targetType')" />
@@ -135,8 +141,15 @@ onMounted(reload)
       :total-records="totalRecords"
       :rows-per-page-options="[25, 50, 100]"
       striped-rows
+      show-gridlines
+      size="large"
+      scrollable
+      scroll-height="62vh"
+      row-hover
       data-key="id"
+      class="audit-table text-base"
       @page="onPage"
+      @row-click="onRowClick"
     >
       <Column field="occurredAt" :header="t('auditLogs.columns.when')" style="width: 14rem">
         <template #body="{ data }">
@@ -160,8 +173,15 @@ onMounted(reload)
       </Column>
     </DataTable>
 
-    <Dialog v-model:visible="detailOpen" :header="t('auditLogs.detail.title')" modal :style="{ width: '36rem' }">
-      <div v-if="detail" class="flex flex-col gap-2 text-sm">
+    <Dialog
+      v-model:visible="detailOpen"
+      :header="t('auditLogs.detail.title')"
+      modal
+      dismissable-mask
+      :style="{ width: '50rem' }"
+      :breakpoints="{ '960px': '92vw' }"
+    >
+      <div v-if="detail" class="flex flex-col gap-2 text-base">
         <div><strong>{{ t('auditLogs.detail.when') }}:</strong> {{ new Date(detail.occurredAt).toLocaleString() }}</div>
         <div><strong>{{ t('auditLogs.detail.action') }}:</strong> {{ detail.action }}</div>
         <div><strong>{{ t('auditLogs.detail.outcome') }}:</strong> {{ detail.outcome }}</div>
@@ -172,7 +192,7 @@ onMounted(reload)
         <div><strong>{{ t('auditLogs.detail.userAgent') }}:</strong> {{ detail.userAgent || '—' }}</div>
         <div class="mt-2">
           <strong>{{ t('auditLogs.detail.payload') }}:</strong>
-          <pre class="mt-1 p-2 rounded bg-surface-100 dark:bg-surface-800 overflow-auto text-xs">{{
+          <pre class="mt-1 p-3 rounded-md bg-surface-100 dark:bg-surface-800 overflow-auto text-sm leading-relaxed max-h-96">{{
             detail.payload ? JSON.stringify(detail.payload, null, 2) : t('auditLogs.detail.empty')
           }}</pre>
         </div>
@@ -183,3 +203,10 @@ onMounted(reload)
     </Dialog>
   </div>
 </template>
+
+<style scoped>
+/* 행 전체가 클릭으로 상세를 열 수 있음을 보이게 */
+.audit-table :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
+}
+</style>
