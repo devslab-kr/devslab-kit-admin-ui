@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import EmptyState from '@/components/EmptyState.vue'
+import TableSkeleton from '@/components/TableSkeleton.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -147,7 +148,9 @@ onMounted(reload)
       </div>
     </div>
 
+    <TableSkeleton v-if="loading && !filtered.length" :columns="3" :rows="8" :label="t('common.loading')" />
     <DataTable
+      v-else
       :value="filtered"
       :loading="loading"
       striped-rows

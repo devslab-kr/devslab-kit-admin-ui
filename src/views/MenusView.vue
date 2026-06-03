@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import TreeTable from 'primevue/treetable'
 import Column from 'primevue/column'
 import EmptyState from '@/components/EmptyState.vue'
+import TableSkeleton from '@/components/TableSkeleton.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -181,7 +182,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <TreeTable :value="nodes" :loading="loading" data-key="key" :indent-size="24">
+    <TableSkeleton v-if="loading && !nodes.length" :columns="3" :rows="8" :label="t('common.loading')" />
+    <TreeTable v-else :value="nodes" :loading="loading" data-key="key" :indent-size="24">
       <template #empty>
         <EmptyState :message="t('common.noResults')" />
       </template>
