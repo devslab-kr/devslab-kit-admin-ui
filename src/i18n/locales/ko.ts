@@ -157,6 +157,7 @@ export default {
     close: '닫기',
     search: '검색',
     noResults: '결과 없음',
+    loading: '불러오는 중…',
     tenantId: '테넌트 ID',
     code: '코드',
     name: '이름',

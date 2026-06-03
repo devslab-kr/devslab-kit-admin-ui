@@ -157,6 +157,7 @@ export default {
     close: 'Close',
     search: 'Search',
     noResults: 'No results',
+    loading: 'Loading…',
     tenantId: 'Tenant ID',
     code: 'Code',
     name: 'Name',

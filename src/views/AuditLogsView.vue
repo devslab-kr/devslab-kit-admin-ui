@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable, { type DataTablePageEvent, type DataTableRowClickEvent } from 'primevue/datatable'
 import Column from 'primevue/column'
+import TableSkeleton from '@/components/TableSkeleton.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -132,7 +133,9 @@ onMounted(reload)
       </div>
     </div>
 
+    <TableSkeleton v-if="loading && !rows.length" :columns="8" :rows="8" :label="t('common.loading')" />
     <DataTable
+      v-else
       :value="rows"
       :loading="loading"
       lazy

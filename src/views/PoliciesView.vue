@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import TableSkeleton from '@/components/TableSkeleton.vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -128,7 +129,9 @@ onMounted(reload)
       {{ t('policies.intro') }}
     </Message>
 
+    <TableSkeleton v-if="loading && !rows.length" :columns="3" :rows="8" :label="t('common.loading')" />
     <DataTable
+      v-else
       :value="rows"
       :loading="loading"
       striped-rows
