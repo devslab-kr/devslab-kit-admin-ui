@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Config Sync
+- **Config Sync page** (`/config-sync`) for the kit's config-sync surface (ADR 0003):
+  export this environment's config as a code-keyed JSON bundle (view / download / copy),
+  and import a bundle with a **dry-run diff** (created / updated / deleted / skipped) before
+  applying. Supports `merge`/`mirror` modes and an opt-in **user sync** toggle (no passwords
+  carried; existing users never overwritten). Sidebar nav entry under Platform; ko/en i18n.
+  Requires `devslab.kit.config-sync.enabled=true` on the backend (devslab-kit 0.4.0).
+
 #### Scaffold
 - Vue 3 + Vite + TypeScript scaffold via `npm create vite`.
 - PrimeVue 4 (Aura preset) + Tailwind CSS 4 + `tailwindcss-primeui` + PrimeIcons setup.

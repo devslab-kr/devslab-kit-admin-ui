@@ -11,7 +11,7 @@
 | 영역 | 페이지 |
 | --- | --- |
 | Identity / Access | Users · Roles · Permissions · Groups (계층 멤버 + 역할 부여) · ABAC Policies (dry-run tester 포함) |
-| Platform | Tenants · Menus (권한 기반 노드를 가진 TreeTable) · 런타임 Settings (`devslab.kit.*` properties read-only) |
+| Platform | Tenants · Menus (권한 기반 노드를 가진 TreeTable) · 런타임 Settings (`devslab.kit.*` properties read-only) · **Config Sync** (환경 간 설정 export / import — `merge`/`mirror`, dry-run diff) |
 | Observability | Dashboard (KPI 카드 + 최근 audit 이벤트) · Audit Logs (필터 + lazy paging + JSON payload viewer) · Diagnostics (로그인 tester, 권한 tester, menu-visibility tester) |
 
 ## 기술 스택

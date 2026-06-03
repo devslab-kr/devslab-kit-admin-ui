@@ -11,7 +11,7 @@ Not a thin CRUD form — a **full admin console** for everything `devslab-kit` s
 | Area | Pages |
 | --- | --- |
 | Identity / Access | Users · Roles · Permissions · Groups (hierarchical members + role grants) · ABAC Policies (with dry-run tester) |
-| Platform | Tenants · Menus (TreeTable with permission-gated nodes) · runtime Settings (`devslab.kit.*` properties read-only) |
+| Platform | Tenants · Menus (TreeTable with permission-gated nodes) · runtime Settings (`devslab.kit.*` properties read-only) · **Config Sync** (export / import config across environments — `merge`/`mirror`, dry-run diff) |
 | Observability | Dashboard (KPI cards + recent audit events) · Audit Logs (filterable, lazy-paginated, JSON payload viewer) · Diagnostics (login tester, permission tester, menu-visibility tester) |
 
 ## Stack
