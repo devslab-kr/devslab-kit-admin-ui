@@ -4,6 +4,7 @@ export default {
     signOut: '로그아웃',
     toggleTheme: '테마 전환',
     toggleLocale: '언어 전환',
+    openMenu: '메뉴 열기',
   },
   // 각 페이지 제목 아래 한 줄 설명.
   subtitles: {
