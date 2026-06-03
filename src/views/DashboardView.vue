@@ -73,11 +73,13 @@ onMounted(refresh)
       <Card data-testid="kpi-users">
         <template #content>
           <div class="flex items-center gap-3">
-            <i class="pi pi-user text-2xl text-primary"></i>
-            <div class="flex-1">
+            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 text-primary shrink-0">
+              <i class="pi pi-user text-xl"></i>
+            </div>
+            <div class="flex-1 min-w-0">
               <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiUsers') }}</div>
               <Skeleton v-if="loading && userCount === null" height="2rem" />
-              <div v-else class="text-2xl font-semibold" data-testid="kpi-users-value">
+              <div v-else class="text-2xl font-semibold truncate" data-testid="kpi-users-value">
                 {{ userCount ?? '—' }}
               </div>
             </div>
@@ -88,11 +90,13 @@ onMounted(refresh)
       <Card data-testid="kpi-tenants">
         <template #content>
           <div class="flex items-center gap-3">
-            <i class="pi pi-building text-2xl text-primary"></i>
-            <div class="flex-1">
+            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 text-primary shrink-0">
+              <i class="pi pi-building text-xl"></i>
+            </div>
+            <div class="flex-1 min-w-0">
               <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiTenants') }}</div>
               <Skeleton v-if="loading && tenantCount === null" height="2rem" />
-              <div v-else class="text-2xl font-semibold" data-testid="kpi-tenants-value">
+              <div v-else class="text-2xl font-semibold truncate" data-testid="kpi-tenants-value">
                 {{ tenantCount ?? '—' }}
               </div>
             </div>
@@ -103,10 +107,12 @@ onMounted(refresh)
       <Card data-testid="kpi-current-tenant">
         <template #content>
           <div class="flex items-center gap-3">
-            <i class="pi pi-id-card text-2xl text-primary"></i>
-            <div class="flex-1">
+            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 text-primary shrink-0">
+              <i class="pi pi-id-card text-xl"></i>
+            </div>
+            <div class="flex-1 min-w-0">
               <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiCurrentTenant') }}</div>
-              <div class="text-2xl font-semibold" data-testid="kpi-current-tenant-value">
+              <div class="text-2xl font-semibold truncate" data-testid="kpi-current-tenant-value">
                 {{ auth.user?.tenantId ?? '—' }}
               </div>
             </div>
@@ -117,10 +123,12 @@ onMounted(refresh)
       <Card data-testid="kpi-signed-in">
         <template #content>
           <div class="flex items-center gap-3">
-            <i class="pi pi-user-edit text-2xl text-primary"></i>
-            <div class="flex-1">
+            <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 text-primary shrink-0">
+              <i class="pi pi-user-edit text-xl"></i>
+            </div>
+            <div class="flex-1 min-w-0">
               <div class="text-sm text-surface-500 dark:text-surface-400">{{ t('dashboard.kpiSignedIn') }}</div>
-              <div class="text-2xl font-semibold" data-testid="kpi-signed-in-value">
+              <div class="text-2xl font-semibold truncate" data-testid="kpi-signed-in-value">
                 {{ auth.user?.loginId ?? '—' }}
               </div>
             </div>
