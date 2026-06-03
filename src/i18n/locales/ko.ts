@@ -5,6 +5,18 @@ export default {
     toggleTheme: '테마 전환',
     toggleLocale: '언어 전환',
   },
+  // 각 페이지 제목 아래 한 줄 설명.
+  subtitles: {
+    users: '로그인하고 접근 권한을 받을 수 있는 플랫폼 계정.',
+    roles: '사용자·그룹에 부여하는 권한 묶음(역할).',
+    permissions: '역할을 통해 부여되는 세분화된 권한(resource.action).',
+    groups: '같은 역할을 공유하는 사용자 모음.',
+    menus: '제품 UI에 내려주는 권한 필터링 네비게이션.',
+    tenants: '격리된 작업공간 — 모든 플랫폼 데이터는 테넌트 단위.',
+    policies: '역할 위에 얹는 속성 기반(ABAC) 규칙 — 여기서 dry-run 테스트.',
+    diagnostics: '특정 사용자의 로그인·권한·메뉴 가시성을 점검.',
+    settings: 'kit의 적용된 설정을 읽기 전용으로 보는 화면.',
+  },
   assign: {
     available: '가능',
     assigned: '할당됨',

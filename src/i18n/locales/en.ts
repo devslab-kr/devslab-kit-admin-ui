@@ -5,6 +5,18 @@ export default {
     toggleTheme: 'Toggle theme',
     toggleLocale: 'Toggle language',
   },
+  // One-line description shown under each page title.
+  subtitles: {
+    users: 'Platform accounts that can sign in and be granted access.',
+    roles: 'Named bundles of permissions you assign to users and groups.',
+    permissions: 'Fine-grained capabilities (resource.action) granted through roles.',
+    groups: 'Collections of users that share a set of roles.',
+    menus: 'Permission-gated navigation served to your product UI.',
+    tenants: 'Isolated workspaces — all platform data is scoped to a tenant.',
+    policies: 'Attribute-based (ABAC) rules on top of roles — dry-run them here.',
+    diagnostics: 'Probe login, permission checks and menu visibility for any user.',
+    settings: "A live, read-only view of the kit's effective configuration.",
+  },
   assign: {
     available: 'Available',
     assigned: 'Assigned',
