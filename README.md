@@ -4,6 +4,10 @@
 
 Vue 3 admin console for [devslab-kr/devslab-kit](https://github.com/devslab-kr/devslab-kit) — manages and observes every capability the platform starter exposes.
 
+> 📖 **Full usage guide — every screen, step by step:**
+> **[devslab-kit.devslab.kr/guides/admin-console](https://devslab-kit.devslab.kr/guides/admin-console/)**
+> (rendered, searchable, EN/KO — part of the devslab-kit docs site).
+
 ## What it covers
 
 Not a thin CRUD form — a **full admin console** for everything `devslab-kit` ships:
