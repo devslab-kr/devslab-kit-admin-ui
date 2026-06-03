@@ -4,6 +4,7 @@ export default {
     signOut: 'Sign out',
     toggleTheme: 'Toggle theme',
     toggleLocale: 'Toggle language',
+    openMenu: 'Open menu',
   },
   // One-line description shown under each page title.
   subtitles: {

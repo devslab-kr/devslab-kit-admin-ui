@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter, useRoute, RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Menu from 'primevue/menu'
@@ -13,6 +13,16 @@ const route = useRoute()
 const auth = useAuthStore()
 const ui = useUiStore()
 const { t } = useI18n()
+
+// Mobile off-canvas sidebar (drawer). Closes automatically on navigation so
+// tapping a nav item on a phone takes you there and dismisses the drawer.
+const sidebarOpen = ref(false)
+watch(
+  () => route.fullPath,
+  () => {
+    sidebarOpen.value = false
+  },
+)
 
 // Account dropdown anchored on the header username. PrimeVue's Menu in popup
 // mode exposes toggle(event); type just that surface to avoid depending on an
@@ -88,7 +98,18 @@ function toggleLocale() {
 
 <template>
   <div class="flex h-screen">
-    <aside class="w-64 shrink-0 border-r border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-950 flex flex-col">
+    <!-- Mobile backdrop: tap to dismiss the drawer. -->
+    <div
+      v-if="sidebarOpen"
+      class="fixed inset-0 z-30 bg-black/50 lg:hidden"
+      aria-hidden="true"
+      @click="sidebarOpen = false"
+    ></div>
+
+    <aside
+      class="fixed inset-y-0 left-0 z-40 w-64 shrink-0 border-r border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 flex flex-col transform transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0"
+      :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
       <div class="px-4 py-4 border-b border-surface-200 dark:border-surface-800 flex items-center gap-2">
         <i class="pi pi-shield text-primary"></i>
         <span class="font-semibold">{{ t('app.title') }}</span>
@@ -99,9 +120,21 @@ function toggleLocale() {
     </aside>
 
     <div class="flex-1 flex flex-col min-w-0">
-      <header class="h-14 border-b border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-950 flex items-center justify-between px-4">
-        <div class="text-sm text-surface-600 dark:text-surface-400">
-          {{ (route.meta.title as string | undefined) ?? route.name }}
+      <header class="h-14 border-b border-surface-200 dark:border-surface-800 bg-surface-0 dark:bg-surface-900 flex items-center justify-between px-4">
+        <div class="flex items-center gap-2 min-w-0">
+          <Button
+            class="lg:hidden"
+            text
+            rounded
+            severity="secondary"
+            icon="pi pi-bars"
+            v-tooltip.top="t('app.openMenu')"
+            :aria-label="t('app.openMenu')"
+            @click="sidebarOpen = true"
+          />
+          <div class="text-sm text-surface-600 dark:text-surface-400 truncate">
+            {{ (route.meta.title as string | undefined) ?? route.name }}
+          </div>
         </div>
         <div class="flex items-center gap-2">
           <Button
