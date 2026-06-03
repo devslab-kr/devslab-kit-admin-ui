@@ -44,8 +44,11 @@ onMounted(reload)
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('settings.title') }}</h1>
+    <div class="flex items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h1 class="text-xl font-semibold">{{ t('settings.title') }}</h1>
+        <p class="text-sm text-surface-500 dark:text-surface-400 mt-0.5">{{ t('subtitles.settings') }}</p>
+      </div>
       <Button
         icon="pi pi-refresh"
         severity="secondary"

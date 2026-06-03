@@ -187,8 +187,11 @@ onMounted(reload)
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold">{{ t('groups.title') }}</h1>
+    <div class="flex items-start justify-between gap-4">
+      <div class="min-w-0">
+        <h1 class="text-xl font-semibold">{{ t('groups.title') }}</h1>
+        <p class="text-sm text-surface-500 dark:text-surface-400 mt-0.5">{{ t('subtitles.groups') }}</p>
+      </div>
       <div class="flex items-center gap-2">
         <InputText v-model="search" :placeholder="t('common.search')" class="w-56" />
         <Button icon="pi pi-refresh" severity="secondary" outlined v-tooltip.top="t('common.ariaRefresh')" :aria-label="t('common.ariaRefresh')" @click="reload" />
