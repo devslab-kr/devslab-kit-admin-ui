@@ -176,6 +176,8 @@ export default {
     ariaLockToggle: { lock: '잠금', unlock: '잠금 해제' },
     ariaResetPassword: '비밀번호 초기화',
     ariaChangeStatus: '상태 변경',
+    ariaManageRoles: '역할 관리',
+    ariaManageGroups: '그룹 관리',
     createDialog: {
       title: '사용자 생성',
       loginIdPlaceholder: '로그인 ID',
@@ -185,6 +187,8 @@ export default {
     },
     passwordDialog: { title: '비밀번호 초기화', prompt: '{loginId} 의 새 비밀번호' },
     statusDialog: { title: '상태 변경', prompt: '{loginId} 의 상태' },
+    rolesDialog: { title: '역할 — {loginId}' },
+    groupsDialog: { title: '그룹 — {loginId}' },
     deleteConfirm: {
       header: '사용자 삭제',
       message: '사용자 "{loginId}" 를 삭제할까요? 되돌릴 수 없습니다.',
@@ -194,6 +198,8 @@ export default {
       deleted: '사용자 삭제됨',
       statusUpdated: '상태 업데이트됨',
       passwordReset: '비밀번호 초기화됨',
+      rolesUpdated: '역할 업데이트됨',
+      groupsUpdated: '그룹 업데이트됨',
       lockFailed: '잠금 / 잠금 해제 실패',
       loadFailed: '사용자 불러오기 실패',
       passwordFailed: '비밀번호 초기화 실패',
