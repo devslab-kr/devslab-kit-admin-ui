@@ -12,6 +12,10 @@ import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import { usersApi, type UserAccount } from '@/api/users'
+import { rolesApi } from '@/api/roles'
+import { groupsApi } from '@/api/groups'
+import AssignDialog from '@/components/AssignDialog.vue'
+import type { AssignOption } from '@/components/assign'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -38,6 +42,19 @@ const passwordTarget = ref<UserAccount | null>(null)
 const newPassword = ref('')
 const statusTarget = ref<UserAccount | null>(null)
 const newStatus = ref<UserAccount['status']>('ACTIVE')
+
+// Role / group assignment (PickList dialogs) — manage a user's access from the user side.
+const rolesOpen = ref(false)
+const rolesUser = ref<UserAccount | null>(null)
+const allRoles = ref<AssignOption[]>([])
+const assignedRoleIds = ref<string[]>([])
+const rolesSaving = ref(false)
+
+const groupsOpen = ref(false)
+const groupsUser = ref<UserAccount | null>(null)
+const allGroups = ref<AssignOption[]>([])
+const assignedGroupIds = ref<string[]>([])
+const groupsSaving = ref(false)
 
 const statusOptions = ['ACTIVE', 'LOCKED', 'DISABLED', 'PENDING_VERIFICATION']
 
@@ -122,6 +139,62 @@ async function submitStatus() {
   }
 }
 
+async function openRoles(user: UserAccount) {
+  rolesUser.value = user
+  try {
+    const [roles, assigned] = await Promise.all([rolesApi.list(tenantId.value), usersApi.roles(user.id.value)])
+    allRoles.value = roles.map((r) => ({ id: r.id.value, label: r.code, sub: r.name }))
+    assignedRoleIds.value = assigned.map((a) => a.value)
+    rolesOpen.value = true
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('users.toasts.loadFailed'), detail: extractMsg(e), life: 4000 })
+  }
+}
+
+async function saveRoles(added: string[], removed: string[]) {
+  if (!rolesUser.value) return
+  rolesSaving.value = true
+  const userId = rolesUser.value.id.value
+  try {
+    for (const roleId of added) await rolesApi.assignToUser(roleId, userId, tenantId.value)
+    for (const roleId of removed) await rolesApi.revokeFromUser(roleId, userId)
+    toast.add({ severity: 'success', summary: t('users.toasts.rolesUpdated'), life: 2500 })
+    rolesOpen.value = false
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('toasts.updateFailed'), detail: extractMsg(e), life: 4000 })
+  } finally {
+    rolesSaving.value = false
+  }
+}
+
+async function openGroups(user: UserAccount) {
+  groupsUser.value = user
+  try {
+    const [groups, assigned] = await Promise.all([groupsApi.list(tenantId.value), usersApi.groups(user.id.value)])
+    allGroups.value = groups.map((g) => ({ id: g.id.value, label: g.code, sub: g.name }))
+    assignedGroupIds.value = assigned.map((a) => a.value)
+    groupsOpen.value = true
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('users.toasts.loadFailed'), detail: extractMsg(e), life: 4000 })
+  }
+}
+
+async function saveGroups(added: string[], removed: string[]) {
+  if (!groupsUser.value) return
+  groupsSaving.value = true
+  const userId = groupsUser.value.id.value
+  try {
+    for (const groupId of added) await groupsApi.addMember(groupId, userId)
+    for (const groupId of removed) await groupsApi.removeMember(groupId, userId)
+    toast.add({ severity: 'success', summary: t('users.toasts.groupsUpdated'), life: 2500 })
+    groupsOpen.value = false
+  } catch (e) {
+    toast.add({ severity: 'error', summary: t('toasts.updateFailed'), detail: extractMsg(e), life: 4000 })
+  } finally {
+    groupsSaving.value = false
+  }
+}
+
 function confirmDelete(row: UserAccount) {
   confirm.require({
     message: t('users.deleteConfirm.message', { loginId: row.loginId }),
@@ -187,7 +260,7 @@ onMounted(reload)
         </template>
       </Column>
       <Column field="providerType" :header="t('users.columns.provider')" />
-      <Column header="" style="width: 14rem; text-align: right">
+      <Column header="" style="width: 18rem; text-align: right">
         <template #body="{ data }">
           <div class="flex items-center justify-end gap-1">
             <Button
@@ -199,6 +272,8 @@ onMounted(reload)
               @click="toggleLock(data)"
             />
             <Button icon="pi pi-key" text rounded :aria-label="t('users.ariaResetPassword')" @click="openPassword(data)" />
+            <Button icon="pi pi-id-card" text rounded :aria-label="t('users.ariaManageRoles')" @click="openRoles(data)" />
+            <Button icon="pi pi-users" text rounded :aria-label="t('users.ariaManageGroups')" @click="openGroups(data)" />
             <Button icon="pi pi-pencil" text rounded :aria-label="t('users.ariaChangeStatus')" @click="openStatus(data)" />
             <Button
               icon="pi pi-trash"
@@ -253,5 +328,23 @@ onMounted(reload)
         <Button :label="t('common.save')" icon="pi pi-check" @click="submitStatus" />
       </template>
     </Dialog>
+
+    <AssignDialog
+      v-model:visible="rolesOpen"
+      :title="t('users.rolesDialog.title', { loginId: rolesUser?.loginId ?? '' })"
+      :all="allRoles"
+      :assigned-ids="assignedRoleIds"
+      :saving="rolesSaving"
+      @save="saveRoles"
+    />
+
+    <AssignDialog
+      v-model:visible="groupsOpen"
+      :title="t('users.groupsDialog.title', { loginId: groupsUser?.loginId ?? '' })"
+      :all="allGroups"
+      :assigned-ids="assignedGroupIds"
+      :saving="groupsSaving"
+      @save="saveGroups"
+    />
   </div>
 </template>

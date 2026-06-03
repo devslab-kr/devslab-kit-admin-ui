@@ -176,6 +176,8 @@ export default {
     ariaLockToggle: { lock: 'Lock', unlock: 'Unlock' },
     ariaResetPassword: 'Reset password',
     ariaChangeStatus: 'Change status',
+    ariaManageRoles: 'Manage roles',
+    ariaManageGroups: 'Manage groups',
     createDialog: {
       title: 'Create user',
       loginIdPlaceholder: 'Login ID',
@@ -185,6 +187,8 @@ export default {
     },
     passwordDialog: { title: 'Reset password', prompt: 'New password for {loginId}' },
     statusDialog: { title: 'Change status', prompt: 'Status for {loginId}' },
+    rolesDialog: { title: 'Roles — {loginId}' },
+    groupsDialog: { title: 'Groups — {loginId}' },
     deleteConfirm: {
       header: 'Delete user',
       message: 'Delete user "{loginId}"? This cannot be undone.',
@@ -194,6 +198,8 @@ export default {
       deleted: 'User deleted',
       statusUpdated: 'Status updated',
       passwordReset: 'Password reset',
+      rolesUpdated: 'Roles updated',
+      groupsUpdated: 'Groups updated',
       lockFailed: 'Lock/unlock failed',
       loadFailed: 'Failed to load users',
       passwordFailed: 'Password reset failed',

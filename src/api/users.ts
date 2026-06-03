@@ -54,4 +54,12 @@ export const usersApi = {
   remove(id: string) {
     return client.delete<void>(`${base}/${id}`).then((r) => r.data)
   },
+  // Roles/groups assigned to a user (ids). Assign/revoke live on the role & group
+  // resources (rolesApi.assignToUser / groupsApi.addMember). Kit 0.4.2+.
+  roles(id: string) {
+    return client.get<{ value: string }[]>(`${base}/${id}/roles`).then((r) => r.data)
+  },
+  groups(id: string) {
+    return client.get<{ value: string }[]>(`${base}/${id}/groups`).then((r) => r.data)
+  },
 }
