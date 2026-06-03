@@ -30,6 +30,63 @@ export default {
     dashboard: 'Dashboard',
     diagnostics: 'Diagnostics',
     auditLogs: 'Audit Logs',
+    configSync: 'Config Sync',
+  },
+  configSync: {
+    title: 'Config Sync',
+    intro:
+      'Promote definitional config (permissions, roles, menus) from this environment to another. Export a code-keyed bundle here, then import it on the target. Requires devslab.kit.config-sync.enabled=true on both servers; it is refused under a production profile.',
+    counts: {
+      permissions: '{n} permissions',
+      roles: '{n} roles',
+      menus: '{n} menus',
+    },
+    export: {
+      title: 'Export',
+      desc: "Snapshot this environment's permissions, roles and menus as a portable, code-keyed bundle.",
+      run: 'Export',
+      download: 'Download JSON',
+      copy: 'Copy',
+      empty: 'No bundle yet — click Export to generate one.',
+    },
+    import: {
+      title: 'Import',
+      desc: 'Paste or upload a bundle, preview the changes (dry-run), then apply.',
+      placeholder: 'Paste a config bundle JSON here…',
+      pickFile: 'Choose file',
+      mode: 'Mode',
+      modes: {
+        merge: 'Merge (add & update)',
+        mirror: 'Mirror (delete extras)',
+      },
+      mirrorWarn:
+        'Mirror deletes target entities that are absent from the bundle. Always review the dry-run before applying. Requires a kit version that supports mirror.',
+      dryRun: 'Preview (dry-run)',
+      apply: 'Apply',
+      invalidJson: 'Invalid JSON — could not parse the bundle.',
+      needDryRun: 'Run a preview first; apply unlocks once the dry-run reflects the current bundle.',
+    },
+    result: {
+      dryRunTitle: 'Preview (dry-run) — nothing was written',
+      appliedTitle: 'Applied',
+      created: 'Created',
+      updated: 'Updated',
+      none: 'None',
+      section: {
+        permissions: 'Permissions',
+        roles: 'Roles',
+        menus: 'Menus',
+      },
+    },
+    toasts: {
+      exported: 'Config exported',
+      exportFailed: 'Export failed',
+      dryRunDone: 'Preview ready',
+      applied: 'Config applied',
+      importFailed: 'Import failed',
+      copied: 'Copied to clipboard',
+      copyFailed: 'Copy failed',
+    },
   },
   login: {
     tenant: 'Tenant',
