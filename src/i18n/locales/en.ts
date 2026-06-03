@@ -40,6 +40,7 @@ export default {
       permissions: '{n} permissions',
       roles: '{n} roles',
       menus: '{n} menus',
+      users: '{n} users',
     },
     export: {
       title: 'Export',
@@ -47,6 +48,7 @@ export default {
       run: 'Export',
       download: 'Download JSON',
       copy: 'Copy',
+      includeUsers: 'Include users (no passwords)',
       empty: 'No bundle yet — click Export to generate one.',
     },
     import: {
@@ -65,17 +67,23 @@ export default {
       apply: 'Apply',
       invalidJson: 'Invalid JSON — could not parse the bundle.',
       needDryRun: 'Run a preview first; apply unlocks once the dry-run reflects the current bundle.',
+      includeUsers: 'Sync users',
+      usersHint:
+        'User sync creates missing users only — no passwords are carried (created users must have one set by an admin) and existing users are never overwritten.',
     },
     result: {
       dryRunTitle: 'Preview (dry-run) — nothing was written',
       appliedTitle: 'Applied',
       created: 'Created',
       updated: 'Updated',
+      deleted: 'Deleted',
+      skipped: 'Skipped',
       none: 'None',
       section: {
         permissions: 'Permissions',
         roles: 'Roles',
         menus: 'Menus',
+        users: 'Users',
       },
     },
     toasts: {

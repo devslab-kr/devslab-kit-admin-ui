@@ -40,6 +40,7 @@ export default {
       permissions: '권한 {n}개',
       roles: '역할 {n}개',
       menus: '메뉴 {n}개',
+      users: '사용자 {n}명',
     },
     export: {
       title: '내보내기',
@@ -47,6 +48,7 @@ export default {
       run: '내보내기',
       download: 'JSON 다운로드',
       copy: '복사',
+      includeUsers: '사용자 포함 (비밀번호 제외)',
       empty: '아직 번들이 없습니다 — 내보내기를 눌러 생성하세요.',
     },
     import: {
@@ -65,17 +67,23 @@ export default {
       apply: '적용',
       invalidJson: '잘못된 JSON — 번들을 파싱할 수 없습니다.',
       needDryRun: '먼저 미리보기를 실행하세요. 미리보기가 현재 번들과 일치하면 적용이 활성화됩니다.',
+      includeUsers: '사용자 동기화',
+      usersHint:
+        '사용자 동기화는 없는 사용자만 생성합니다 — 비밀번호는 전송되지 않으며(생성된 사용자는 관리자가 비밀번호를 설정해야 함) 기존 사용자는 절대 덮어쓰지 않습니다.',
     },
     result: {
       dryRunTitle: '미리보기 (dry-run) — 아무것도 기록되지 않았습니다',
       appliedTitle: '적용 완료',
       created: '생성',
       updated: '수정',
+      deleted: '삭제',
+      skipped: '건너뜀',
       none: '없음',
       section: {
         permissions: '권한',
         roles: '역할',
         menus: '메뉴',
+        users: '사용자',
       },
     },
     toasts: {
