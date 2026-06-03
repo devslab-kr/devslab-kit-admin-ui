@@ -16,7 +16,6 @@ export interface LoginTestResponse {
 export interface PermissionCheckRequest {
   userId: string
   permissionCode: string
-  tenantId?: string
 }
 
 export interface PermissionCheckResponse {
@@ -44,9 +43,9 @@ export const diagnosticsApi = {
   permissionCheck(req: PermissionCheckRequest) {
     return client.post<PermissionCheckResponse>(`${base}/permission-check`, req).then((r) => r.data)
   },
-  menuVisibility(userId: string, tenantId: string) {
+  menuVisibility(userId: string) {
     return client
-      .get<MenuVisibilityResponse>(`${base}/menu-visibility`, { params: { userId, tenantId } })
+      .get<MenuVisibilityResponse>(`${base}/menu-visibility`, { params: { userId } })
       .then((r) => r.data)
   },
 }

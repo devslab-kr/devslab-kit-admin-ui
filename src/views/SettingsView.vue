@@ -123,12 +123,20 @@ onMounted(reload)
       </Card>
 
       <Card>
-        <template #title>{{ t('settings.sections.menu') }}</template>
+        <template #title>{{ t('settings.sections.cache') }}</template>
         <template #content>
           <dl class="text-sm space-y-1">
             <div>
+              <dt class="inline font-medium">{{ t('settings.fields.cacheType') }}:</dt>
+              <dd class="inline"><code>{{ data.cache.type }}</code></dd>
+            </div>
+            <div>
               <dt class="inline font-medium">{{ t('settings.fields.cacheTtlSeconds') }}:</dt>
-              <dd class="inline">{{ data.menu.cacheTtlSeconds }}</dd>
+              <dd class="inline">{{ data.cache.ttlSeconds }}</dd>
+            </div>
+            <div>
+              <dt class="inline font-medium">{{ t('settings.fields.cacheKeyPrefix') }}:</dt>
+              <dd class="inline"><code>{{ data.cache.keyPrefix }}</code></dd>
             </div>
           </dl>
         </template>
