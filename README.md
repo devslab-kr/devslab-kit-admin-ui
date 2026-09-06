@@ -1,5 +1,9 @@
 # devslab-kit-admin-ui
 
+<!-- publisher:start -->
+Published by [데브스랩(DevsLab)](https://devslab.kr/).
+<!-- publisher:end -->
+
 [한국어 README](README.ko.md)
 
 Vue 3 admin console for [devslab-kr/devslab-kit](https://github.com/devslab-kr/devslab-kit) — manages and observes every capability the platform starter exposes.

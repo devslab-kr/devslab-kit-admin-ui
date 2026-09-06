@@ -3,6 +3,14 @@ name: ci
 on:
   push:
     branches: [main]
+    # The Docker job publishes on push; documentation uses publisher.yml only.
+    # A push that also changes application code still builds and publishes.
+    paths-ignore:
+      - 'README*.md'
+      - 'docs/**'
+      - 'tools/publisher/**'
+      - '.github/workflows/publisher.yml'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
 
